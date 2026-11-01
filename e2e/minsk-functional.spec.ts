@@ -73,3 +73,18 @@ test('live extraction errors retain source without issuing an unmocked provider 
   await expect(page.getByRole('dialog').getByRole('alert')).toContainText('request allowance reached');
   await expect(page.getByLabel('Workflow procedure')).toHaveValue(source);
 });
+
+test('string observations remain strings through editing and counterfactual requests',async({page})=>{
+  const samples=await (await page.request.get('/api/v1/samples')).json();
+  const workflow=structuredClone(samples.samples[0]);
+  workflow.conditions[0].valueType='STRING';workflow.conditions[0].expectedValue='false';workflow.conditions[0].observedValue='true';
+  await page.route('**/api/v1/samples',route=>route.fulfill({json:{samples:[workflow]}}));
+  await page.goto('/');await expect(page.getByRole('heading',{name:'Home',exact:true})).toBeVisible();
+  await navigate(page,'Workflows');await expect(page.getByLabel(`Observed ${workflow.conditions[0].name}`,{exact:true})).toHaveValue('true');
+  await navigate(page,'Counterfactuals');await page.getByLabel('Counterfactual condition').selectOption(workflow.conditions[0].id);
+  await page.getByLabel('Replacement value').fill('false');
+  const request=page.waitForRequest(r=>r.url().includes('/api/v1/experiments/run')&&!!r.postDataJSON()?.intervention);
+  await page.getByRole('button',{name:'Run counterfactual',exact:true}).click();
+  expect((await request).postDataJSON().intervention.replacementValue).toBe('false');
+  await expect(page.locator('.outcome-panel code')).toHaveText('SAFE_EXECUTION');
+});
