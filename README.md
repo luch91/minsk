@@ -79,3 +79,5 @@ Routes include `/healthz`, `/api/v1/samples`, `/api/v1/workflows/validate`, `/ap
 Run `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`, `pnpm check:content`, `pnpm check:secrets`, `pnpm audit --audit-level high` and `pnpm e2e`. For an API that returns HTML instead of JSON, check `VITE_API_URL`, the Worker health endpoint and its allowed origin. A disabled provider requires the switches, credentials and budget configuration described above.
 
 Further reading: [architecture](docs/architecture.md), [benchmark](docs/benchmark.md), [model integration](docs/model-integration.md), [model evaluation](docs/model-evaluation.md), [provenance](docs/provenance.md), [security](docs/security.md), and [deployment](docs/deployment.md). See [CONTRIBUTING.md](CONTRIBUTING.md) and the [MIT license](LICENSE).
+
+The approved interface integration and verification boundaries are documented in [Approved workbench integration](docs/approved-workbench-integration.md).

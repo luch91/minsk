@@ -6,8 +6,8 @@ export type Investigation = { investigationId?: string; baseline: EvaluationResu
 export type Scenario = 'BASELINE' | 'COUNTERFACTUAL' | 'SAFEGUARD';
 const API = import.meta.env.VITE_API_URL || '';
 const sessionKey='minsk-public-session';
-function sessionId(){const existing=localStorage.getItem(sessionKey);if(existing)return existing;const created=crypto.randomUUID().replaceAll('-','');localStorage.setItem(sessionKey,created);return created;}
-async function call<T>(path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
+function sessionId(){const existing=localStorage.getItem(sessionKey);if(existing)return existing;const created=[...crypto.getRandomValues(new Uint8Array(16))].map(n=>n.toString(16).padStart(2,'0')).join('');localStorage.setItem(sessionKey,created);return created;}
+export async function call<T>(path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
   const response = await fetch(`${API}${path}`, { method: body ? 'POST' : 'GET', headers: { ...(body ? { 'Content-Type': 'application/json' } : {}),'X-Minsk-Session':sessionId() }, body: body ? JSON.stringify(body) : undefined, signal });
   if (!response.headers.get('content-type')?.includes('application/json')) throw new Error(`API returned ${response.status} without JSON. Check the configured API URL.`);
   const result = await response.json();
@@ -59,7 +59,7 @@ export function useInvestigation() {
 
   async function run<T>(label: string, operation: (signal: AbortSignal) => Promise<T>, done: (value: T) => void) {
     controller.current?.abort(); const ac = new AbortController(); controller.current = ac; setBusy(label); setError('');
-    try { const value = await operation(ac.signal); if (!ac.signal.aborted) done(value); }
+    try { const value = await operation(ac.signal); if (!ac.signal.aborted) { done(value); return value; } }
     catch (e) { if (!ac.signal.aborted) setError(e instanceof Error ? e.message : 'Request failed'); }
     finally { if (controller.current === ac) { setBusy(''); controller.current = null; } }
   }
@@ -83,9 +83,9 @@ export function useInvestigation() {
     setIntervention(c ? { id: `user-${c.id}`, targetConditionId: c.id, originalValue: c.observedValue, replacementValue: c.observedValue === true ? false : true, reason: 'Manual counterfactual', proposedBy: 'USER', validated: true } : null);
   }
   function analyze() { return run('Extracting workflow', async s => {const extracted=await call<{ workflow: Workflow; model: ModelRecord }>('/api/v1/workflows/extract', { text: source }, s);const evaluated=await call<{result:EvaluationResult}>('/api/v1/experiments/run',{workflow:extracted.workflow},s);return {extracted,evaluated};},x=>{reset(x.extracted.workflow);setExtractionModel(x.extracted.model);setBaseline(x.evaluated.result);}); }
-  function applyIntervention() {
-    if (!workflow || !intervention) return;
-    return run('Evaluating counterfactual', s => call<{ result: EvaluationResult }>('/api/v1/experiments/run', { workflow, intervention }, s), x => { setApplied(intervention); setFailure(x.result); setVerification(null); setScenario('COUNTERFACTUAL'); setTrace([]); setModel(null); setRouting(undefined); setInvestigationId(null); });
+  function applyIntervention(next = intervention) {
+    if (!workflow || !next) return;
+    return run('Evaluating counterfactual', s => call<{ result: EvaluationResult }>('/api/v1/experiments/run', { workflow, intervention: next }, s), x => { setIntervention(next); setApplied(next); setFailure(x.result); setVerification(null); setScenario('COUNTERFACTUAL'); setTrace([]); setModel(null); setRouting(undefined); setInvestigationId(null); });
   }
   function investigate() {
     if (!workflow) return;
@@ -107,6 +107,6 @@ export function useInvestigation() {
   function runChallenger(){if(!workflow)return;return run('Running Baseten challenger',s=>call<unknown>('/api/v1/challengers/open-weight',{workflow,...(investigationId&&applied?{hosted:{investigationId,intervention:applied}}:{})},s),setChallenger);}
   const result = scenario === 'SAFEGUARD' ? verification?.repaired ?? baseline : scenario === 'COUNTERFACTUAL' ? failure ?? baseline : baseline;
   const sceneWorkflow = workflow && scenario === 'SAFEGUARD' && verification ? { ...workflow, steps: workflow.steps.map(step => step.id === verification.safeguard.stepId && !step.executionGateIds.includes(verification.safeguard.conditionId) ? { ...step, executionGateIds: [...step.executionGateIds, verification.safeguard.conditionId] } : step) } : workflow;
-  return { samples, workflow, sceneWorkflow, selected, setSelected, source, setSource, baseline, failure, verification, intervention, applied, trace, model, extractionModel, routing, scenario, setScenario, result, busy, error, liveEnabled, challengerEnabled,challenger,runChallenger,loading, certificate, benchmark, loadBenchmark,loadWorkflowJson, selectWorkflow, selectCondition, editCondition, editConditionDetails,editConditionEvidence,editRulePredicate,editRuleEvidence,toggleGate, analyze, applyIntervention, investigate, verify, exportCertificate, cancel: () => controller.current?.abort() };
+  return { setError, samples, workflow, sceneWorkflow, selected, setSelected, source, setSource, baseline, failure, verification, intervention, applied, trace, model, extractionModel, routing, scenario, setScenario, result, busy, error, liveEnabled, challengerEnabled,challenger,runChallenger,loading, certificate, benchmark, loadBenchmark,loadWorkflowJson, selectWorkflow, selectCondition, editCondition, editConditionDetails,editConditionEvidence,editRulePredicate,editRuleEvidence,toggleGate, analyze, applyIntervention, investigate, verify, exportCertificate, cancel: () => controller.current?.abort() };
 }
 export type InvestigationState = ReturnType<typeof useInvestigation>;
