@@ -19,3 +19,5 @@ The API still owns model credentials, admission, credit controls, rate limits, d
 - Full dependency audit did not return a usable local result. Existing CI retains its audit gate.
 
 This is not a claim of deployed browser acceptance. Do not merge until CI and the isolated integrated preview journey pass. Live Meta verification needs a separately authorised test with a confirmed credit cap. No production deployment or merge is part of this checkpoint.
+
+CI checkpoint: the remote runner passed install, typecheck, lint, all unit tests, benchmark, build and dependency audit. Its first browser run exposed a JSX runtime mismatch. Vite now explicitly uses the automatic JSX runtime. A local rendering regression test also covers the single-workflow empty-directory boundary and passes. Browser acceptance remains pending the corrected CI run.
