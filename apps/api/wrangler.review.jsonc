@@ -1,0 +1,16 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "faultline-api-visual-preview",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-26",
+  "vars": {
+    "MODEL_CALLS_ENABLED": "false",
+    "WONDER_ENABLED": "false",
+    "BASETEN_CHALLENGER_ENABLED": "false",
+    "PUBLIC_CHALLENGER_ENABLED": "false",
+    "ALLOWED_ORIGIN": "https://feat-reference-visual-integr-k0mv.faultline-web-preview.pages.dev,https://approved-workbench.minsk-web-preview.pages.dev"
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "BUDGET", "class_name": "BudgetLedger" }]
+  }
+}

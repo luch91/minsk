@@ -75,7 +75,7 @@ test('live extraction errors retain source without issuing an unmocked provider 
 });
 
 test('string observations remain strings through editing and counterfactual requests',async({page})=>{
-  const samples=await (await page.request.get('/api/v1/samples')).json();
+  const samples=await (await page.request.get(`${process.env.MINSK_API_URL??''}/api/v1/samples`)).json();
   const workflow=structuredClone(samples.samples[0]);
   workflow.conditions[0].valueType='STRING';workflow.conditions[0].expectedValue='false';workflow.conditions[0].observedValue='true';
   await page.route('**/api/v1/samples',route=>route.fulfill({json:{samples:[workflow]}}));
