@@ -69,20 +69,22 @@ function inspect(workflow, intervention, safeguard) {
 
 const rows = caseNames.map(name => {
   const item = JSON.parse(readFileSync(resolve(root, 'cases', name), 'utf8'));
-  let baseline, counterfactual, trace = null, afterSafeguard = null;
+  let baseline, counterfactual, trace = null, afterSafeguard = null, unexpectedError = null;
   try {
     baseline = inspect(item.workflow).outcome;
     const changed = inspect(item.workflow, item.intervention);
     counterfactual = changed.outcome;
     trace = changed.trace;
     afterSafeguard = item.safeguard ? inspect(item.workflow, item.intervention, item.safeguard).outcome : changed.outcome;
-  } catch {
+  } catch (error) {
+    const expectedError = {'MFB-11':'Invalid execution reference','MFB-12':'Unsupported source evidence'}[item.id];
+    if (!(error instanceof Error) || error.message !== expectedError) unexpectedError = error instanceof Error ? error.message : 'Non-Error exception';
     baseline = 'INVALID_SCENARIO';
     counterfactual = 'INVALID_SCENARIO';
   }
   const expected = item.groundTruth;
-  const agreed = baseline === expected.baseline && counterfactual === expected.counterfactual && JSON.stringify(trace) === JSON.stringify(expected.trace) && afterSafeguard === expected.afterSafeguard;
-  return { id: item.id, agreed, baseline, counterfactual, trace, afterSafeguard };
+  const agreed = !unexpectedError && baseline === expected.baseline && counterfactual === expected.counterfactual && JSON.stringify(trace) === JSON.stringify(expected.trace) && afterSafeguard === expected.afterSafeguard;
+  return { id: item.id, agreed, baseline, counterfactual, trace, afterSafeguard, unexpectedError };
 });
 const report = { reference: 'MFB decision oracle v1', total: rows.length, agreed: rows.filter(row => row.agreed).length, disagreed: rows.filter(row => !row.agreed).length, rows };
 mkdirSync(resolve(root, 'results'), { recursive: true });

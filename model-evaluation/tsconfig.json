@@ -1,0 +1,19 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": [
+      "node"
+    ],
+    "typeRoots": [
+      "../packages/simulator/node_modules/@types"
+    ]
+  },
+  "include": [
+    "scoring.ts",
+    "heldout.ts",
+    "invalid-cases.ts",
+    "../scripts/benchmark-models.ts",
+    "../scripts/rescore-benchmark.ts"
+  ]
+}

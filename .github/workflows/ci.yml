@@ -21,6 +21,7 @@ jobs:
       - run: pnpm lint
       - run: pnpm test
       - run: pnpm benchmark
+      - run: pnpm benchmark:checks
       - run: pnpm build
       - run: pnpm audit --audit-level high
       - run: pnpm exec playwright install --with-deps chromium
