@@ -15,8 +15,8 @@
     "MINSK_EVAL_MAX_MICRO_USD": "2000000",
     "PUBLIC_GLOBAL_REQUESTS_PER_MINUTE": "300",
     "PUBLIC_CLIENT_REQUESTS_PER_MINUTE": "30",
-    "PUBLIC_GLOBAL_MODEL_CALLS_PER_DAY": "120",
-    "PUBLIC_CLIENT_MODEL_CALLS_PER_DAY": "12",
+    "PUBLIC_GLOBAL_MODEL_CALLS_PER_DAY": "500",
+    "PUBLIC_CLIENT_MODEL_CALLS_PER_DAY": "20",
     "META_CREDITS_CONFIRMED": "true",
     "META_BILLING_MODE": "Standard",
     "ALLOWED_ORIGIN": "https://minsk-web-preview.pages.dev,https://release-candidate.minsk-web-preview.pages.dev"
