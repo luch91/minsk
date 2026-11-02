@@ -85,3 +85,11 @@ p{color:#c5d5e1}
 
 .scenario-hint{margin:8px 0 12px;color:var(--muted);font-size:11px;line-height:1.5;overflow-wrap:anywhere}
 .posture-workspace>.scenario-hint{margin-inline:24px}
+
+/* Audit corrections preserve the approved composition. */
+.motion-settings .check-label{display:flex;align-items:center;gap:8px}
+.motion-settings .check-label input{margin:0;flex:0 0 15px}
+.drawer-body .error-banner,.drawer-body .request-bar{margin:0 0 16px}
+.relation-key .dependency-key{border-top:2px dashed var(--cyan)}
+.session-notice{margin-bottom:20px}
+.provider-setup{margin-top:24px}

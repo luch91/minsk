@@ -55,7 +55,7 @@ export function useInvestigation() {
       setWorkflow(first); setSelected(first.steps[0]?.id ?? first.conditions[0]?.id ?? null); setSource(first.sourceDocuments[0]?.text ?? '');
       const evaluated = await call<{ result: EvaluationResult }>('/api/v1/experiments/run', { workflow: first }, ac.signal);
       if (!ac.signal.aborted&&revision.current===initialRevision) setBaseline(evaluated.result);
-    }).catch(e => { if (!ac.signal.aborted) setError(e.message); }).finally(() => { if (!ac.signal.aborted) setLoading(false); });
+    }).catch(e => { if (!ac.signal.aborted&&revision.current===initialRevision) setError(e.message); }).finally(() => { if (!ac.signal.aborted) setLoading(false); });
     call<{liveModelEnabled:boolean;publicChallengerEnabled:boolean}>('/api/v1/budget',undefined,ac.signal).then(x=>{if(!ac.signal.aborted){setLiveEnabled(x.liveModelEnabled);setChallengerEnabled(x.publicChallengerEnabled);}}).catch(()=>{});
     return () => { ac.abort(); controller.current?.abort(); };
   }, []);

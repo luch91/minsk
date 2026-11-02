@@ -23,7 +23,7 @@ jobs:
       - run: pnpm benchmark
       - run: pnpm benchmark:checks
       - run: pnpm build
-      - run: pnpm audit --audit-level high
+      - run: pnpm audit
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm e2e
       - name: Verify isolated deployed preview
