@@ -37,7 +37,8 @@ export class BudgetLedger extends DurableObject {
     if(!columns.some(x=>x.name==='error_code'))this.ctx.storage.sql.exec('ALTER TABLE calls ADD COLUMN error_code TEXT');
     this.ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS request_counts (key TEXT PRIMARY KEY, count INTEGER NOT NULL)');
     this.ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS attestations (id TEXT PRIMARY KEY, payload TEXT NOT NULL, created INTEGER NOT NULL)');
-    this.ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS investigation_lock (id INTEGER PRIMARY KEY CHECK (id=1), started INTEGER NOT NULL)');
+    this.ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS investigation_lock (id INTEGER PRIMARY KEY CHECK (id=1), started INTEGER NOT NULL, owner TEXT)');
+    const lockColumns=this.ctx.storage.sql.exec<{name:string}>('PRAGMA table_info(investigation_lock)').toArray();if(!lockColumns.some(x=>x.name==='owner'))this.ctx.storage.sql.exec('ALTER TABLE investigation_lock ADD COLUMN owner TEXT');
   }
   admit(client:string):{allowed:boolean;reason?:string}{
     this.initialize();const minute=new Date().toISOString().slice(0,16);const quotas=publicQuotaLimits(this.env as {PUBLIC_GLOBAL_REQUESTS_PER_MINUTE?:string;PUBLIC_CLIENT_REQUESTS_PER_MINUTE?:string;PUBLIC_GLOBAL_MODEL_CALLS_PER_DAY?:string;PUBLIC_CLIENT_MODEL_CALLS_PER_DAY?:string});const globalCount=this.ctx.storage.sql.exec<{count:number}>('SELECT count FROM request_counts WHERE key=?',`global:${minute}`).toArray()[0]?.count??0;const clientCount=this.ctx.storage.sql.exec<{count:number}>('SELECT count FROM request_counts WHERE key=?',`client:${client}:${minute}`).toArray()[0]?.count??0;const admission=quotaAdmission(globalCount,clientCount,quotas.globalRequestsPerMinute,quotas.clientRequestsPerMinute,'Request rate limit exceeded');if(!admission.allowed)return admission;
@@ -45,8 +46,8 @@ export class BudgetLedger extends DurableObject {
     this.ctx.storage.sql.exec('DELETE FROM request_counts WHERE key NOT LIKE ?',`%${minute}`);
     return {allowed:true};
   }
-  acquireInvestigation():boolean{this.initialize();const now=Date.now();this.ctx.storage.sql.exec('DELETE FROM investigation_lock WHERE started<?',now-60_000);const current=this.ctx.storage.sql.exec<{id:number}>('SELECT id FROM investigation_lock WHERE id=1').toArray();if(current.length)return false;this.ctx.storage.sql.exec('INSERT INTO investigation_lock (id,started) VALUES (1,?)',now);return true;}
-  releaseInvestigation():void{this.initialize();this.ctx.storage.sql.exec('DELETE FROM investigation_lock WHERE id=1');}
+  acquireInvestigation(owner:string):boolean{this.initialize();const now=Date.now();this.ctx.storage.sql.exec('DELETE FROM investigation_lock WHERE started<?',now-180_000);const current=this.ctx.storage.sql.exec<{id:number}>('SELECT id FROM investigation_lock WHERE id=1').toArray();if(current.length)return false;this.ctx.storage.sql.exec('INSERT INTO investigation_lock (id,started,owner) VALUES (1,?,?)',now,owner);return true;}
+  releaseInvestigation(owner:string):void{this.initialize();this.ctx.storage.sql.exec('DELETE FROM investigation_lock WHERE id=1 AND owner=?',owner);}
   reserve(id:string,client:string,estimatedMicroUsd:number,kind:'text'|'image',model:ModelId|'meta-models/muse-spark-open-1026'='muse-spark-1.3',provider:BillingProvider='Meta'): {allowed:boolean;reason?:string} {
     this.initialize();
     if(client==='eval:controlled'){
