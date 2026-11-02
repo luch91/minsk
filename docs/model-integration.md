@@ -34,3 +34,7 @@ The browser exported and verified certificate integrity and original input. Inte
 Exact frontend source: 6c905ee807feb54b35798f49f7e46aed4b84eb17. Temporary live deployment: https://d0e48073.minsk-web-preview.pages.dev. The live-verification origin was removed from Worker CORS after testing and the prior Meta ceiling and Wonder setting restored. The approved-workbench preview remains deterministic with inference disabled. PR 12 remains unmerged.
 
 Release findings: extraction required human correction; correcting workflow observations clears extraction provenance; the workbench model-call metric counts records rather than individual provider requests. The verified results above come from actual response records, not that metric. No general model-accuracy claim follows from this single synthetic scenario.
+
+## Release hardening, 2 November 2026
+
+The complete extraction, review, Meta tool investigation, independent Baseten comparison, replay and attested certificate journey was verified through the actual browser. See the [release hardening report](release-hardening-2026-11-02.md) for exact model roles, response IDs, token usage, preserved controls and raw evidence. The approved-workbench preview remains deterministic; the temporary live test origin was removed.

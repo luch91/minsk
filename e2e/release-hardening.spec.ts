@@ -21,19 +21,19 @@ test('provider-fixture extraction review, two-tool investigation, Baseten compar
  await expect(dialog.getByRole('heading',{name:'Review the interpretation'})).toBeVisible();
  await dialog.getByLabel(`Observed ${workflow.conditions[0].name}`,{exact:true}).selectOption('true');
  await dialog.getByRole('button',{name:'Confirm interpretation',exact:true}).click();await expect(dialog.locator('.outcome-panel code')).toHaveText('SAFE_EXECUTION');await dialog.getByRole('button',{name:'Open investigation',exact:true}).click();
- await page.getByRole('button',{name:'Run Meta investigation',exact:true}).click();await expect(page.locator('.trace-row')).toHaveCount(2);await expect(page.locator('.outcome-panel code')).toHaveText('UNSAFE_EXECUTION');
+ await page.getByRole('button',{name:'Run Meta investigation',exact:true}).click();await expect(page.locator('.trace-row')).toHaveCount(2);await expect(page.locator('main .outcome-panel code')).toHaveText('UNSAFE_EXECUTION');
  await page.getByRole('button',{name:'Baseten challenger',exact:true}).click();await page.getByRole('button',{name:'Run Baseten challenger',exact:true}).click();await expect(page.locator('pre')).toContainText('fixture-baseten');
- await navigate(page,'Counterfactuals');await page.getByRole('button',{name:'Verify safeguard',exact:true}).click();await expect(page.locator('.outcome-panel code')).toHaveText('SAFE_BLOCK');
+ await navigate(page,'Counterfactuals');await page.getByRole('button',{name:'Verify safeguard',exact:true}).click();await expect(page.locator('main .outcome-panel code')).toHaveText('SAFE_BLOCK');
  await navigate(page,'Certificates');const download=page.waitForEvent('download');await page.getByRole('button',{name:'Export certificate',exact:true}).click();await download;await expect(page.getByRole('heading',{name:'Certificate integrity verified'})).toBeVisible();
  // This browser fixture intentionally has no ledger attestation. API integration tests cover trusted model provenance.
  await expect(page.locator('.certificate-summary')).toContainText('No attested model provenance');
- await navigate(page,'Counterfactuals');await page.getByRole('button',{name:'Run counterfactual',exact:true}).click();await expect(page.locator('.outcome-panel code')).toHaveText('UNSAFE_EXECUTION');await navigate(page,'Certificates');await expect(page.locator('.certificate-summary')).toHaveCount(0);
+ await navigate(page,'Counterfactuals');await page.getByRole('button',{name:'Run counterfactual',exact:true}).click();await expect(page.locator('main .outcome-panel code')).toHaveText('UNSAFE_EXECUTION');await navigate(page,'Certificates');await expect(page.locator('.certificate-summary')).toHaveCount(0);
  expect([extractionCalls,investigationCalls,challengerCalls]).toEqual([1,1,1]);expect(errors).toEqual([]);
 });
 
 test('blocked local storage still permits the complete deterministic journey',async({page})=>{
  await page.addInitScript(()=>{Storage.prototype.getItem=()=>{throw new Error('Fixture: storage blocked');};Storage.prototype.setItem=()=>{throw new Error('Fixture: storage blocked');};});
- const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');await navigate(page,'Counterfactuals');await page.getByRole('button',{name:'Run counterfactual',exact:true}).click();await expect(page.locator('.outcome-panel code')).toHaveText('UNSAFE_EXECUTION');await page.getByRole('button',{name:'Verify safeguard',exact:true}).click();await expect(page.locator('.outcome-panel code')).toHaveText('SAFE_BLOCK');expect(errors).toEqual([]);
+ const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');await navigate(page,'Counterfactuals');await page.getByRole('button',{name:'Run counterfactual',exact:true}).click();await expect(page.locator('main .outcome-panel code')).toHaveText('UNSAFE_EXECUTION');await page.getByRole('button',{name:'Verify safeguard',exact:true}).click();await expect(page.locator('main .outcome-panel code')).toHaveText('SAFE_BLOCK');expect(errors).toEqual([]);
 });
 
 test('cancelling extraction preserves source and ignores a late fixture response',async({page})=>{

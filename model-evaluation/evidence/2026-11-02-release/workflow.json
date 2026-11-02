@@ -1,0 +1,114 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "extracted",
+  "title": "Production deployment workflow",
+  "sourceDocuments": [
+    {
+      "id": "input",
+      "text": "Production deployment requires passing automated tests, human approval, and verified migration compatibility. The deployment agent executes when tests pass and migration compatibility passes; it does not check human approval. Current observations: automated tests have passed; human approval is present; migration compatibility is verified.",
+      "contentHash": "5f7866cda60d7c7b2d9bb567f643bbca456d2961509c56cbc035ea3b3a14b809",
+      "createdAt": "2026-11-02T04:41:44.194Z",
+      "schemaVersion": "1.0.0"
+    }
+  ],
+  "conditions": [
+    {
+      "id": "c_tests",
+      "name": "passing automated tests",
+      "valueType": "BOOLEAN",
+      "expectedValue": true,
+      "observedValue": true,
+      "sourceSpans": [
+        {
+          "sourceId": "input",
+          "startOffset": 248,
+          "endOffset": 275,
+          "excerpt": "automated tests have passed",
+          "verified": true
+        }
+      ],
+      "freshnessRequirement": null,
+      "observedAt": null
+    },
+    {
+      "id": "c_approval",
+      "name": "human approval",
+      "valueType": "BOOLEAN",
+      "expectedValue": true,
+      "observedValue": true,
+      "sourceSpans": [
+        {
+          "sourceId": "input",
+          "startOffset": 277,
+          "endOffset": 302,
+          "excerpt": "human approval is present",
+          "verified": true
+        }
+      ],
+      "freshnessRequirement": null,
+      "observedAt": null
+    },
+    {
+      "id": "c_migration",
+      "name": "verified migration compatibility",
+      "valueType": "BOOLEAN",
+      "expectedValue": true,
+      "observedValue": true,
+      "sourceSpans": [
+        {
+          "sourceId": "input",
+          "startOffset": 304,
+          "endOffset": 339,
+          "excerpt": "migration compatibility is verified",
+          "verified": true
+        }
+      ],
+      "freshnessRequirement": null,
+      "observedAt": null
+    }
+  ],
+  "policyRules": [
+    {
+      "id": "pr_prod",
+      "description": "Production deployment requires all three conditions",
+      "subjectStepId": "s_deploy",
+      "predicate": "ALL",
+      "requiredConditionIds": [
+        "c_tests",
+        "c_approval",
+        "c_migration"
+      ],
+      "sourceSpans": [
+        {
+          "sourceId": "input",
+          "startOffset": 0,
+          "endOffset": 109,
+          "excerpt": "Production deployment requires passing automated tests, human approval, and verified migration compatibility.",
+          "verified": true
+        }
+      ],
+      "origin": "EXPLICIT"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s_deploy",
+      "name": "deployment agent",
+      "actionType": "DEPLOY",
+      "dependsOn": [],
+      "executionGateIds": [
+        "c_tests",
+        "c_migration"
+      ],
+      "sourceSpans": [
+        {
+          "sourceId": "input",
+          "startOffset": 110,
+          "endOffset": 190,
+          "excerpt": "The deployment agent executes when tests pass and migration compatibility passes",
+          "verified": true
+        }
+      ]
+    }
+  ]
+}
