@@ -1,3 +1,11 @@
+import {useState} from 'react';
 import {useInvestigation} from './useInvestigation';
 import {Workbench} from './workbench/Workbench';
-export default function MinskApp(){const state=useInvestigation();if(!state.workflow)return <main className="loading-workspace"><h1>Minsk</h1><p role="status">{state.loading?'Loading workflow records...':'No workflow records available.'}</p>{state.error&&<p role="alert">{state.error}</p>}<button onClick={()=>location.reload()}>Retry loading</button></main>;return <Workbench state={state}/>;}
+import {InterferenceBackground} from './workbench/InterferenceBackground';
+const motionKey='minsk-background-motion';
+export default function MinskApp(){
+  const state=useInvestigation();
+  const [backgroundMotion,setBackgroundMotion]=useState(()=>{try{return localStorage.getItem(motionKey)!=='paused';}catch{return true;}});
+  function changeMotion(enabled:boolean){setBackgroundMotion(enabled);try{localStorage.setItem(motionKey,enabled?'running':'paused');}catch{/* Storage is optional; the control still works for this session. */}}
+  return <div className="application-frame"><InterferenceBackground enabled={backgroundMotion}/>{!state.workflow?<main className="loading-workspace"><h1>Minsk</h1><p role="status">{state.loading?'Loading workflow records...':'No workflow records available.'}</p>{state.error&&<p role="alert">{state.error}</p>}<button onClick={()=>location.reload()}>Retry loading</button></main>:<Workbench state={state} backgroundMotion={backgroundMotion} onBackgroundMotionChange={changeMotion}/>}</div>;
+}
