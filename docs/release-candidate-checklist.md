@@ -17,8 +17,8 @@ The URL must serve the exact verified release commit before it is shared. The ap
 
 ## Judge controls
 
-- Global live-provider allowance: 120 dispatches per UTC day.
-- Per-client allowance: 12 dispatches per UTC day.
+- Global live-provider allowance: 500 dispatches per UTC day.
+- Per-client allowance: 20 dispatches per UTC day.
 - Meta cumulative application estimate ceiling: $49 in the preview configuration.
 - Baseten cumulative application estimate ceiling: $10 in the preview configuration.
 - Provider kill switches and credit-confirmation switches remain required.
