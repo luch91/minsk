@@ -47,6 +47,24 @@ describe('release provider journey with deterministic provider fixtures',()=>{
   const {post,ledger}=setup();vi.stubGlobal('fetch',vi.fn(async()=>new Response('fixture-meta-secret',{status:429})));
   const response=await post('workflows/extract',{text});expect(response.status).toBe(429);expect(await response.text()).not.toContain('fixture-meta-secret');expect(ledger.markUnknown).toHaveBeenCalledWith(expect.any(String),expect.any(Number),'HTTP_429');
  });
+ it('falls back once from unavailable Wonder and preserves routing provenance',async()=>{
+  const {post,env,ledger}=setup();env.WONDER_ENABLED='true';
+  const workflow=structuredClone(missingApproval);workflow.conditions[0]!.observedValue=null;workflow.conditions[1]!.observedValue=null;
+  const known=workflow.conditions.find(c=>typeof c.observedValue==='boolean')!;
+  const transport=vi.fn(async(_url:string,init:RequestInit)=>{
+   const payload=JSON.parse(init.body as string);
+   if(payload.model==='muse-wonder-1.0')return new Response('Fixture: provider unavailable',{status:503});
+   return Response.json({id:'fixture-fallback',output:[{type:'function_call',name:'run_counterfactual',call_id:'fixture-fallback-tool',arguments:JSON.stringify({conditionId:known.id,replacementValue:!known.observedValue})}],usage:{input_tokens:100,output_tokens:10}});
+  });vi.stubGlobal('fetch',transport);
+  const response=await post('investigations',{workflow});expect(response.status).toBe(200);
+  expect(await response.json()).toMatchObject({model:{modelId:'muse-spark-1.3',role:'ESCALATION_FALLBACK'},routing:{modelId:'muse-spark-1.3',escalated:false,reason:expect.stringContaining('one Spark fallback')}});
+  expect(transport).toHaveBeenCalledTimes(2);expect(ledger.markUnknown).toHaveBeenCalledTimes(1);expect(ledger.attest).toHaveBeenCalledTimes(1);expect(ledger.releaseInvestigation).toHaveBeenCalledTimes(1);
+ });
+ it('does not attest an incomplete investigation when safeguard inference is throttled',async()=>{
+  const {post,ledger}=setup();let calls=0;
+  vi.stubGlobal('fetch',vi.fn(async()=>{calls++;if(calls===2)return new Response('Fixture: provider quota',{status:429});return Response.json({id:'fixture-first-only',output:[{type:'function_call',name:'run_counterfactual',call_id:'fixture-first-tool',arguments:JSON.stringify({conditionId:'human-approval',replacementValue:false})}],usage:{input_tokens:100,output_tokens:20}});}));
+  const response=await post('investigations',{workflow:missingApproval});expect(response.status).toBe(429);expect(calls).toBe(2);expect(ledger.attest).not.toHaveBeenCalled();expect(ledger.releaseInvestigation).toHaveBeenCalledTimes(1);expect(ledger.settle).toHaveBeenCalledTimes(1);expect(ledger.markUnknown).toHaveBeenCalledTimes(1);
+ });
  it('caps actual streamed UTF-8 bytes before decoding or model dispatch',async()=>{
   const {post}=setup();const transport=vi.fn();vi.stubGlobal('fetch',transport);
   const response=await post('workflows/extract',{text:'界'.repeat(21_000)});expect(response.status).toBe(413);expect(transport).not.toHaveBeenCalled();

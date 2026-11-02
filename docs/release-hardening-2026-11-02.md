@@ -55,7 +55,7 @@ The eight-case benchmark quality discrepancies remain documented in [the prior h
 
 ## Validation and residual risk
 
-Local checks passed: 81 unit tests (64 API, 16 simulator, one web rendering), the 12-case deterministic benchmark, certificate CLI regression, benchmark-runner checks, typecheck, lint, production build, content scan and secret-pattern scan. The release suite defines 24 browser checks across desktop/mobile and runs against both localhost and the isolated public preview. CI on the final PR head is the authoritative browser acceptance record.
+Local checks passed: 83 unit tests (66 API, 16 simulator, one web rendering), the 12-case deterministic benchmark, certificate CLI regression, benchmark-runner checks, typecheck, lint, production build, content scan and secret-pattern scan. The release suite defines 24 browser checks across desktop/mobile and runs against both localhost and the isolated public preview. CI on the final PR head is the authoritative browser acceptance record.
 
 The full dependency audit reports one moderate advisory affecting development-only minimatch versions 3.1.5 and 10.2.6 through the lint toolchain, with no high or critical advisory. Registry inspection confirms the current ESLint 10 release still depends on minimatch 10. A forced major-version override is not a verified compatible repair. No runtime dependency or paid infrastructure was added. This lint-toolchain advisory is documented as a residual development risk, not a zero-advisory claim.
 
