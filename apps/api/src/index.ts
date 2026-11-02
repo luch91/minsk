@@ -15,7 +15,7 @@ import sample09 from '../../../benchmark/cases/MFB-09.json';
 import historicalScores from '../../../model-evaluation/scored-2026-10-30.json';
 export {BudgetLedger};
 
-interface Env { MODEL_API_KEY?:string; MODEL_CALLS_ENABLED?:string; META_CREDITS_CONFIRMED?:string; META_BILLING_MODE?:string; WONDER_ENABLED?:string; BASETEN_API_KEY?:string; BASETEN_CREDITS_CONFIRMED?:string; BASETEN_CHALLENGER_ENABLED?:string; PUBLIC_CHALLENGER_ENABLED?:string; BASETEN_TEST_TOKEN?:string; MINSK_EVAL_TOKEN?:string; ALLOWED_ORIGIN?:string; PUBLIC_GLOBAL_REQUESTS_PER_MINUTE?:string; PUBLIC_CLIENT_REQUESTS_PER_MINUTE?:string; PUBLIC_GLOBAL_MODEL_CALLS_PER_DAY?:string; PUBLIC_CLIENT_MODEL_CALLS_PER_DAY?:string; BUDGET:DurableObjectNamespace<BudgetLedger>; }
+interface Env { MODEL_API_KEY?:string; MODEL_CALLS_ENABLED?:string; META_CREDITS_CONFIRMED?:string; META_BILLING_MODE?:string; WONDER_ENABLED?:string; BASETEN_API_KEY?:string; BASETEN_CREDITS_CONFIRMED?:string; BASETEN_CHALLENGER_ENABLED?:string; BASETEN_CEILING_MICRO_USD?:string; PUBLIC_CHALLENGER_ENABLED?:string; BASETEN_TEST_TOKEN?:string; MINSK_EVAL_TOKEN?:string; ALLOWED_ORIGIN?:string; PUBLIC_GLOBAL_REQUESTS_PER_MINUTE?:string; PUBLIC_CLIENT_REQUESTS_PER_MINUTE?:string; PUBLIC_GLOBAL_MODEL_CALLS_PER_DAY?:string; PUBLIC_CLIENT_MODEL_CALLS_PER_DAY?:string; BUDGET:DurableObjectNamespace<BudgetLedger>; }
 const MAX_BODY=60000;
 class HttpError extends Error {constructor(public status:number,message:string){super(message);}}
 const bodySchema=z.object({workflow:WorkflowSchema,intervention:InterventionSchema.optional()});

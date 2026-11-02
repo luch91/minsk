@@ -4,6 +4,7 @@ import type { EvaluationResult, Intervention, Workflow } from '@minsk/contracts'
 export type ModelRecord = { id: string | null; modelId: string; provider: string; role: string; usage: unknown; accountingStatus: string };
 export type Investigation = { investigationId?: string; baseline: EvaluationResult; intervention: Intervention; failure: EvaluationResult; verification: { repaired: EvaluationResult; safeguard: { stepId: string; conditionId: string }; resolved: boolean } | null; trace: Array<{ id: string; tool: string; status: string; arguments: unknown; result: unknown; modelId?: string; responseId?: string | null }>; routing?: {modelId:string;reason:string;escalated:boolean}; model: ModelRecord };
 export type Scenario = 'BASELINE' | 'COUNTERFACTUAL' | 'SAFEGUARD';
+export type ProviderStatus = 'loading' | 'available' | 'disabled' | 'unavailable';
 const API = import.meta.env.VITE_API_URL || '';
 const sessionKey='minsk-public-session';
 let ephemeralSession:string|undefined;
@@ -12,7 +13,10 @@ export async function call<T>(path: string, body?: unknown, signal?: AbortSignal
   const response = await fetch(`${API}${path}`, { method: body ? 'POST' : 'GET', headers: { ...(body ? { 'Content-Type': 'application/json' } : {}),'X-Minsk-Session':sessionId() }, body: body ? JSON.stringify(body) : undefined, signal });
   if (!response.headers.get('content-type')?.includes('application/json')) throw new Error(`API returned ${response.status} without JSON. Check the configured API URL.`);
   const result = await response.json();
-  if (!response.ok) throw new Error(result.error || `Request failed: ${response.status}`);
+  if (!response.ok) {
+    const reference=response.headers.get('X-Correlation-ID')||result.correlationId;
+    throw new Error(`${result.error || `Request failed: ${response.status}`}${reference?` Reference: ${reference}`:''}`);
+  }
   return result as T;
 }
 
@@ -41,6 +45,7 @@ export function useInvestigation() {
   const [benchmark, setBenchmark] = useState<unknown>(null);
   const [challenger,setChallenger]=useState<unknown>(null);
   const [challengerEnabled,setChallengerEnabled]=useState(false);
+  const [providerStatus,setProviderStatus]=useState<{meta:ProviderStatus;baseten:ProviderStatus;error:string}>({meta:'loading',baseten:'loading',error:''});
   const controller = useRef<AbortController | null>(null);
   const revision = useRef(0);
 
@@ -56,9 +61,23 @@ export function useInvestigation() {
       const evaluated = await call<{ result: EvaluationResult }>('/api/v1/experiments/run', { workflow: first }, ac.signal);
       if (!ac.signal.aborted&&revision.current===initialRevision) setBaseline(evaluated.result);
     }).catch(e => { if (!ac.signal.aborted&&revision.current===initialRevision) setError(e.message); }).finally(() => { if (!ac.signal.aborted) setLoading(false); });
-    call<{liveModelEnabled:boolean;publicChallengerEnabled:boolean}>('/api/v1/budget',undefined,ac.signal).then(x=>{if(!ac.signal.aborted){setLiveEnabled(x.liveModelEnabled);setChallengerEnabled(x.publicChallengerEnabled);}}).catch(()=>{});
+    refreshBudget(ac.signal);
     return () => { ac.abort(); controller.current?.abort(); };
   }, []);
+
+  async function refreshBudget(signal?:AbortSignal) {
+    setProviderStatus({meta:'loading',baseten:'loading',error:''});
+    try {
+      const x=await call<{liveModelEnabled:boolean;publicChallengerEnabled:boolean}>('/api/v1/budget',undefined,signal);
+      if(signal?.aborted)return;
+      setLiveEnabled(x.liveModelEnabled);setChallengerEnabled(x.publicChallengerEnabled);
+      setProviderStatus({meta:x.liveModelEnabled?'available':'disabled',baseten:x.publicChallengerEnabled?'available':'disabled',error:''});
+    } catch(e) {
+      if(signal?.aborted)return;
+      setLiveEnabled(false);setChallengerEnabled(false);
+      setProviderStatus({meta:'unavailable',baseten:'unavailable',error:e instanceof Error?e.message:'Provider status request failed'});
+    }
+  }
 
   async function run<T>(label: string, operation: (signal: AbortSignal) => Promise<T>, done: (value: T) => void) {
     controller.current?.abort(); const ac = new AbortController(); controller.current = ac; setBusy(label); setError('');
@@ -115,6 +134,6 @@ export function useInvestigation() {
   function runChallenger(){if(!workflow)return;return run('Running Baseten challenger',s=>call<unknown>('/api/v1/challengers/open-weight',{workflow,...(investigationId&&applied?{hosted:{investigationId,intervention:applied}}:{})},s),value=>{setChallenger(value);setModelCallCount(n=>n+1);});}
   const result = scenario === 'SAFEGUARD' ? verification?.repaired ?? baseline : scenario === 'COUNTERFACTUAL' ? failure ?? baseline : baseline;
   const sceneWorkflow = workflow && scenario === 'SAFEGUARD' && verification ? { ...workflow, steps: workflow.steps.map(step => step.id === verification.safeguard.stepId && !step.executionGateIds.includes(verification.safeguard.conditionId) ? { ...step, executionGateIds: [...step.executionGateIds, verification.safeguard.conditionId] } : step) } : workflow;
-  return { modelCallCount, setError, samples, workflow, sceneWorkflow, selected, setSelected, source, setSource, baseline, failure, verification, intervention, applied, trace, model, extractionModel, routing, scenario, setScenario, result, busy, error, liveEnabled, challengerEnabled,challenger,runChallenger,loading, certificate, benchmark, loadBenchmark,loadWorkflowJson, selectWorkflow, selectCondition, editCondition, editConditionDetails,editConditionEvidence,editRulePredicate,editRuleEvidence,toggleGate, analyze, applyIntervention, investigate, verify, exportCertificate, cancel: () => controller.current?.abort() };
+  return { modelCallCount, setError, samples, workflow, sceneWorkflow, selected, setSelected, source, setSource, baseline, failure, verification, intervention, applied, trace, model, extractionModel, routing, scenario, setScenario, result, busy, error, liveEnabled, challengerEnabled,providerStatus,refreshBudget,challenger,runChallenger,loading, certificate, benchmark, loadBenchmark,loadWorkflowJson, selectWorkflow, selectCondition, editCondition, editConditionDetails,editConditionEvidence,editRulePredicate,editRuleEvidence,toggleGate, analyze, applyIntervention, investigate, verify, exportCertificate, cancel: () => controller.current?.abort() };
 }
 export type InvestigationState = ReturnType<typeof useInvestigation>;

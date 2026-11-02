@@ -93,3 +93,21 @@ p{color:#c5d5e1}
 .relation-key .dependency-key{border-top:2px dashed var(--cyan)}
 .session-notice{margin-bottom:20px}
 .provider-setup{margin-top:24px}
+
+/* Release readability and interaction hardening. */
+@media(min-width:701px){
+.sidebar nav>button small{font-size:9px;line-height:1.25}
+.metric-group,.metric div>span{font-size:9px}
+.diagram-filters,.source-groups,.source-row,.destination-row,.relation-key,.scenario-control button{font-size:10px}
+.source-groups h3,.destination-groups h3,.checkpoint{font-size:10px}
+.destination-row small,.source-groups h3 small,.destination-groups h3 small{font-size:9px}
+}
+.mobile-graph-tools{display:none}
+.notification-panel>header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.notification-panel>header h3{margin:0}
+.history-row>span{font-size:10px;color:var(--muted)}
+@media(max-width:700px){
+.mobile-graph-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--muted);font-size:10px;line-height:1.5}
+.mobile-graph-tools .outline{flex:0 0 auto;min-height:44px}
+.icon-button{min-width:44px;min-height:44px}
+}

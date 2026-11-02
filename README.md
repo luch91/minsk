@@ -45,6 +45,7 @@ Copy the names in [.env.example](.env.example) into the ignored `apps/api/.dev.v
 | `META_CREDITS_CONFIRMED` and `META_BILLING_MODE` | Operator billing confirmation | false and Standard |
 | `META_CEILING_MICRO_USD` | Cumulative Meta estimate ceiling | 50000000 |
 | `BASETEN_API_KEY` | Server-side Baseten key | unset |
+| `BASETEN_CEILING_MICRO_USD` | Cumulative application estimate ceiling for Baseten | 10000000 |
 | `BASETEN_CHALLENGER_ENABLED` and `BASETEN_CREDITS_CONFIRMED` | Baseten controls | false |
 | `PUBLIC_CHALLENGER_ENABLED` | Permit public challenger calls | false |
 | `BASETEN_TEST_TOKEN` | Protect challenger access | unset |
@@ -54,7 +55,7 @@ Copy the names in [.env.example](.env.example) into the ignored `apps/api/.dev.v
 | `PUBLIC_GLOBAL_MODEL_CALLS_PER_DAY`, `PUBLIC_CLIENT_MODEL_CALLS_PER_DAY` | Enforced public provider-dispatch quotas | 30, 5 |
 | `ALLOWED_ORIGIN` | Allowed browser origin | unset |
 
-Reservations, settled token estimates and unknown usage are recorded in a persistent Durable Object. Meta is constrained by the $50 application ceiling; Baseten is metered but has no application-dollar ceiling. Public quotas are enforced globally and per browser session plus Cloudflare client IP. Neither is a provider-side billing guarantee. Check [Meta](https://dev.meta.ai/docs/pricing-rate-limits) and [Baseten](https://www.baseten.co/pricing/) rates and your account's billing conditions before enabling calls.
+Reservations, settled token estimates and unknown usage are recorded in a persistent Durable Object. Meta defaults to a $50 application estimate ceiling and Baseten defaults to $10. Public quotas are enforced globally and per browser session plus Cloudflare client IP. These controls are not provider billing guarantees. Check [Meta](https://dev.meta.ai/docs/pricing-rate-limits) and [Baseten](https://www.baseten.co/pricing/) rates and account billing conditions before enabling calls.
 
 Extracted workflows retain explicit `ALL` or `ANY` policy rules, evidence excerpts, optional freshness requirements in seconds, and optional observation timestamps. The workbench permits operators to correct those values only when evidence remains an exact excerpt of the supplied source. Stale, absent, ambiguous, and contradictory observations evaluate as unknown rather than false.
 
