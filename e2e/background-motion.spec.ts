@@ -12,8 +12,8 @@ test('one continuous interference field survives navigation, tabs and inspection
   await navigate(page,name);await expect(page.getByRole('heading',{name,exact:true})).toBeVisible();
   await expect(canvas).toHaveAttribute('data-continuity-check','same-surface');await expect(canvas).toHaveCount(1);
  }
- await page.getByRole('button',{name:'METRIC SETTINGS',exact:true}).click();
- await expect(page.getByRole('dialog',{name:'Inspection panel'})).toBeVisible();
+ await page.getByRole('button',{name:'METRIC DEFINITIONS',exact:true}).click();
+ await expect(page.getByRole('dialog',{name:'Inspection panel'})).toBeVisible();await expect(page.getByRole('heading',{name:'Metric definitions',exact:true})).toBeVisible();
  await page.getByRole('dialog').getByRole('button',{name:'Close inspection panel'}).click();
  await page.getByRole('tab',{name:'Workflow review',exact:true}).click();await expect(page.getByRole('heading',{name:'Workflows',exact:true})).toBeVisible();
  await expect(canvas).toHaveAttribute('data-continuity-check','same-surface');
