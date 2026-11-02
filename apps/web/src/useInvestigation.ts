@@ -71,11 +71,15 @@ export function useInvestigation() {
     setWorkflow(next); setSource(next.sourceDocuments[0]?.text ?? ''); setSelected(next.steps[0]?.id ?? null); setBaseline(null); setFailure(null); setVerification(null); setIntervention(null); setApplied(null); setTrace([]); setModel(null); if (!preserveExtraction) setExtractionModel(null); setCertificate(null);setChallenger(null); setRouting(undefined); setInvestigationId(null); setScenario('BASELINE');
   }
   function selectWorkflow(next: Workflow) {
-    if (workflow === next) return;
-    reset(next, workflow?.id === next.id && JSON.stringify(workflow.sourceDocuments) === JSON.stringify(next.sourceDocuments));
-    return run('Evaluating workflow', s => call<{ result: EvaluationResult }>('/api/v1/experiments/run', { workflow: next }, s), x => setBaseline(x.result));
+    revision.current++;
+    const preserveExtraction = workflow?.id === next.id && JSON.stringify(workflow.sourceDocuments) === JSON.stringify(next.sourceDocuments);
+    return run('Evaluating workflow', async s => {
+      const validated = await call<{workflow:Workflow}>('/api/v1/workflows/validate', next, s);
+      const evaluated = await call<{result:EvaluationResult}>('/api/v1/experiments/run', {workflow:validated.workflow}, s);
+      return {...evaluated,workflow:validated.workflow};
+    }, x => {reset(x.workflow,preserveExtraction);setBaseline(x.result);});
   }
-  function loadWorkflowJson(text:string) { return run('Validating workflow',s=>call<{workflow:Workflow}>('/api/v1/workflows/validate',JSON.parse(text),s),x=>{void selectWorkflow(x.workflow);}); }
+  function loadWorkflowJson(text:string) { return selectWorkflow(JSON.parse(text)); }
   function editCondition(id: string, value: boolean | null) { if (workflow) return selectWorkflow({ ...workflow, conditions: workflow.conditions.map(c => c.id === id ? { ...c, observedValue: value } : c) }); }
   function editConditionDetails(id:string,patch:Partial<Pick<Workflow['conditions'][number],'name'|'expectedValue'|'freshnessRequirement'|'observedAt'|'sourceSpans'>>) {if(workflow)return selectWorkflow({...workflow,conditions:workflow.conditions.map(c=>c.id===id?{...c,...patch}:c)});}
   function editConditionEvidence(id:string,excerpt:string){if(workflow){const source=workflow.sourceDocuments[0];if(!source)return;const startOffset=source.text.indexOf(excerpt);if(startOffset<0){setError('Evidence must be an exact excerpt from the workflow source.');return;}return editConditionDetails(id,{sourceSpans:[{sourceId:source.id,startOffset,endOffset:startOffset+excerpt.length,excerpt,verified:true}]});}}
