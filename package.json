@@ -16,7 +16,8 @@
     "lint": "pnpm -r lint",
     "check:content": "node scripts/check-content.mjs",
     "check:secrets": "node scripts/check-secrets.mjs",
-    "dev": "pnpm --parallel --filter @minsk/api --filter @minsk/web dev"
+    "dev": "pnpm --parallel --filter @minsk/api --filter @minsk/web dev",
+    "benchmark:checks": "tsc -p model-evaluation/tsconfig.json && pnpm --filter @minsk/api exec vitest run --root ../.. --config apps/api/vitest.config.ts model-evaluation/runner.test.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.38.0",

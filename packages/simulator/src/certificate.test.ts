@@ -69,7 +69,7 @@ describe('independent certificate verification', () => {
       writeFileSync(certificatePath, JSON.stringify(await fixture()));
       writeFileSync(workflowPath, JSON.stringify(missingApproval));
       const root = resolve(process.cwd(), '../..');
-      const output = execFileSync(process.execPath, [resolve(root, 'node_modules/tsx/dist/cli.mjs'), resolve(root, 'scripts/verify-certificate.ts'), certificatePath, workflowPath], { cwd: root, encoding: 'utf8' });
+      const output = execFileSync(process.execPath, ['--import', 'tsx', resolve(root, 'scripts/verify-certificate.ts'), certificatePath, workflowPath], { cwd: root, encoding: 'utf8' });
       expect(JSON.parse(output)).toMatchObject({ valid: true, inputVerified: true, provenanceAuthenticity: 'NOT_VERIFIED' });
     } finally { rmSync(folder, { recursive: true, force: true }); }
   });

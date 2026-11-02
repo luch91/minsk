@@ -1,3 +1,4 @@
+import {expectedInvalidCase} from '../../model-evaluation/invalid-cases';
 import {describe,it,expect} from 'vitest';
 import {readFileSync,readdirSync,mkdirSync,writeFileSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
@@ -30,7 +31,7 @@ describe('Minsk Failure Benchmark',()=>{
         const repeated=await evaluate(graph,item.intervention,new Date('2026-10-26T19:00:00.000Z'));
         if(changed.id!==repeated.id)failures.push('Semantic result hash changed');
         if(item.safeguard){const repair=await verifySafeguard(graph,item.intervention,item.safeguard.stepId,item.safeguard.conditionId,now);repaired=repair.repaired.outcome;verified=repair.resolved;if(!repair.resolved)failures.push('Safeguard was not verified');}
-      }catch(error){baseline='INVALID_SCENARIO';counterfactual='INVALID_SCENARIO';if(item.groundTruth.counterfactual!=='INVALID_SCENARIO')failures.push(error instanceof Error?error.message:'Unexpected evaluation error');}
+      }catch(error){baseline='INVALID_SCENARIO';counterfactual='INVALID_SCENARIO';if(!expectedInvalidCase(item.id,error))failures.push(error instanceof Error?error.message:'Unexpected evaluation error');}
       if(baseline!==item.groundTruth.baseline)failures.push(`Baseline ${baseline} differs from ${item.groundTruth.baseline}`);
       if(counterfactual!==item.groundTruth.counterfactual)failures.push(`Counterfactual ${counterfactual} differs from ${item.groundTruth.counterfactual}`);
       if(JSON.stringify(trace)!==JSON.stringify(item.groundTruth.trace))failures.push('Trace differs from ground truth');
@@ -41,7 +42,7 @@ describe('Minsk Failure Benchmark',()=>{
     const negatives=rows.filter(row=>row.negativeControl);
     const detectionRecall=positives.filter(row=>row.counterfactual==='UNSAFE_EXECUTION').length/positives.length;
     const falsePositives=negatives.filter(row=>row.counterfactual==='UNSAFE_EXECUTION').length;
-    const report={benchmark:'Minsk Failure Benchmark',benchmarkVersion:'1',evaluatorVersion:EVALUATOR_VERSION,commit:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),fixtureHash:await hash(cases.map(file=>readFileSync(resolve(root,'cases',file),'utf8'))),total:rows.length,passed:rows.filter(row=>row.passed).length,failed:rows.filter(row=>!row.passed).length,unsupported:0,indeterminate:rows.filter(row=>row.counterfactual==='INDETERMINATE').length,detectionRecall,falsePositives,verifiedSafeguards:rows.filter(row=>row.safeguardVerified).length,independentGroundTruthAgreement:reference.agreed,rows};
+    const report={benchmark:'Minsk Failure Benchmark',benchmarkVersion:'1',scoringVersion:'2',evaluatorVersion:EVALUATOR_VERSION,commit:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),fixtureHash:await hash(cases.map(file=>readFileSync(resolve(root,'cases',file),'utf8'))),total:rows.length,passed:rows.filter(row=>row.passed).length,failed:rows.filter(row=>!row.passed).length,unsupported:0,indeterminate:rows.filter(row=>row.counterfactual==='INDETERMINATE').length,detectionRecall,falsePositives,verifiedSafeguards:rows.filter(row=>row.safeguardVerified).length,independentGroundTruthAgreement:reference.agreed,rows};
     const results=resolve(root,'results');mkdirSync(results,{recursive:true});writeFileSync(resolve(results,'latest.json'),JSON.stringify(report,null,2)+'\n');
     process.stdout.write(`MFB: ${report.passed}/${report.total} cases, ${report.verifiedSafeguards} verified repairs, ${falsePositives} false positives, ${report.indeterminate} indeterminate\n`);
     expect(report.failed,JSON.stringify(rows.filter(row=>!row.passed))).toBe(0);

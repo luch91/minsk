@@ -66,7 +66,7 @@ pnpm benchmark:models -- --provider meta
 pnpm verify:certificate path/to/certificate.json path/to/workflow.json
 ```
 
-`benchmark:models` performs fresh inference against the eight locked held-out cases, using `meta`, `baseten`, or `all`. Set `MINSK_EVAL_API_URL` and `MINSK_EVAL_TOKEN`; Baseten also requires `MINSK_EVAL_TEST_TOKEN`. Use a local Worker with your own keys, or an authorized HTTPS Worker with operator-provided access tokens. Results are written to ignored `model-evaluation/results/`. A stopped run can be continued with `--resume <result-path>`. Errors are recorded; synthetic results are not real-world accuracy claims.
+`benchmark:models` performs fresh inference against the eight locked synthetic cases, using `meta`, `baseten`, or `all`. Set `MINSK_EVAL_API_URL` and `MINSK_EVAL_TOKEN`; Baseten also requires `MINSK_EVAL_TEST_TOKEN`. Use a local Worker with your own keys, or an authorized HTTPS Worker with operator-provided access tokens. Results are written to ignored `model-evaluation/results/`. A stopped run can be continued with `--resume <result-path>`. Errors are recorded; synthetic results are not real-world accuracy claims.
 
 The independent verifier recomputes integrity and, when the original workflow is supplied, verifies the source, workflow and deterministic results. Integrity does not establish issuer authenticity.
 
@@ -79,3 +79,7 @@ Routes include `/healthz`, `/api/v1/samples`, `/api/v1/workflows/validate`, `/ap
 Run `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`, `pnpm check:content`, `pnpm check:secrets`, `pnpm audit --audit-level high` and `pnpm e2e`. For an API that returns HTML instead of JSON, check `VITE_API_URL`, the Worker health endpoint and its allowed origin. A disabled provider requires the switches, credentials and budget configuration described above.
 
 Further reading: [architecture](docs/architecture.md), [benchmark](docs/benchmark.md), [model integration](docs/model-integration.md), [model evaluation](docs/model-evaluation.md), [provenance](docs/provenance.md), [security](docs/security.md), and [deployment](docs/deployment.md). See [CONTRIBUTING.md](CONTRIBUTING.md) and the [MIT license](LICENSE).
+
+The approved interface integration and verification boundaries are documented in [Approved workbench integration](docs/approved-workbench-integration.md).
+
+Release evidence: [2 November hardening and complete provider journey](docs/release-hardening-2026-11-02.md). The approved [deterministic workbench preview](https://approved-workbench.minsk-web-preview.pages.dev/) preserves the owner-approved interface and does not dispatch live inference.

@@ -1,0 +1,33 @@
+import type {Workflow} from '../packages/contracts/src';
+import {validateWorkflow} from '../packages/simulator/src';
+
+export type ScoreRow = {caseId:string;task:string;reference:{outcome:string;repair:string|null};outcome?:unknown;targetMatched?:boolean|null;outcomeCorrect?:boolean|null;error?:string;extractionCorrect?:boolean|null;extractionChecks?:Record<string,boolean>;repairVerified?:boolean|null;providerTelemetry?:unknown;inputTokens?:number|null;outputTokens?:number|null;latencyMs?:number;response?:unknown;[key:string]:unknown};
+const outcomes=new Set(['SAFE_EXECUTION','UNSAFE_EXECUTION','SAFE_BLOCK','INDETERMINATE']);
+export function summarize(rows:ScoreRow[],expected:number,task=rows[0]?.task){
+  const mode=task==='baseten'?'independent-candidate-discovery':task==='spark-extraction'?'structured-extraction':task==='spark-model-only'?'independent-model-prediction':'targeted-tool-investigation';
+  const classified=rows.filter(row=>!row.error&&typeof row.outcome==='string'&&outcomes.has(row.outcome));
+  const matched=classified.filter(row=>row.targetMatched===true);
+  const positive=matched.filter(row=>row.reference.outcome==='UNSAFE_EXECUTION');
+  const negative=matched.filter(row=>['SAFE_EXECUTION','SAFE_BLOCK'].includes(row.reference.outcome));
+  const correct=matched.filter(row=>row.outcome===row.reference.outcome).length;
+  const extraction=mode==='structured-extraction';
+  const actualModels=Object.fromEntries([...new Set(rows.map(row=>String(row.actualModelId??'UNKNOWN')))].map(id=>[id,rows.filter(row=>String(row.actualModelId??'UNKNOWN')===id).length]));
+  const telemetry=rows.flatMap(row=>Array.isArray(row.providerTelemetry)?row.providerTelemetry:row.providerTelemetry?[row.providerTelemetry]:[]) as Array<{estimatedActualMicroUsd?:number|null}>;
+  return {evaluationMode:mode,actualModels,fallbacks:rows.reduce((sum,row)=>sum+Number(row.fallbacks??0),0),expected,attempted:rows.length,notAttempted:Math.max(0,expected-rows.length),completed:rows.filter(row=>!row.error).length,errors:rows.filter(row=>!!row.error).length,classified:extraction?null:classified.length,unclassified:extraction?null:rows.length-classified.length,targetMatched:extraction?null:matched.length,classificationCoverage:extraction?null:rows.length?classified.length/rows.length:null,agreementPerAttempt:extraction?null:rows.length?correct/rows.length:null,agreementAcrossPlannedCases:extraction?null:expected?correct/expected:null,outcomeCorrect:correct,truePositive:positive.filter(row=>row.outcome==='UNSAFE_EXECUTION').length,falseNegative:positive.filter(row=>row.outcome!=='UNSAFE_EXECUTION').length,falsePositive:negative.filter(row=>row.outcome==='UNSAFE_EXECUTION').length,trueNegative:negative.filter(row=>['SAFE_EXECUTION','SAFE_BLOCK'].includes(String(row.outcome))).length,abstainedOnDeterminate:matched.filter(row=>row.reference.outcome!=='INDETERMINATE'&&row.outcome==='INDETERMINATE').length,unknownCorrect:matched.filter(row=>row.reference.outcome==='INDETERMINATE'&&row.outcome==='INDETERMINATE').length,missedUnsafeCases:extraction?null:rows.filter(row=>row.reference.outcome==='UNSAFE_EXECUTION'&&(!matched.includes(row)||row.outcome!=='UNSAFE_EXECUTION')).length,extractionCorrect:rows.filter(row=>row.extractionCorrect===true).length,extractionDimensions:Object.fromEntries([...new Set(rows.flatMap(row=>Object.keys(row.extractionChecks??{})))].map(key=>[key,{correct:rows.filter(row=>row.extractionChecks?.[key]===true).length,attempted:rows.length}])),verifiedRepairs:rows.filter(row=>row.repairVerified===true).length,providerDispatchesWithTelemetry:telemetry.length,unknownUsageDispatches:telemetry.filter(item=>item.estimatedActualMicroUsd==null).length,usageEstimatedUsd:telemetry.reduce((sum,item)=>sum+(item.estimatedActualMicroUsd??0),0)/1_000_000,inputTokens:rows.reduce((sum,row)=>sum+(row.inputTokens??0),0),outputTokens:rows.reduce((sum,row)=>sum+(row.outputTokens??0),0),endToEndLatencyMs:rows.reduce((sum,row)=>sum+(row.latencyMs??0),0)};
+}
+const normal=(text:string)=>text.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+const sameSet=(a:string[],b:string[])=>JSON.stringify([...a].sort())===JSON.stringify([...b].sort());
+export function scoreExtraction(candidate:unknown,reference:Workflow){
+  let graph:Workflow;
+  try{graph=validateWorkflow(candidate);}catch{return {schemaAndReferences:false,source:false,conditions:false,observations:false,policy:false,gates:false,dependencies:false,evidence:false};}
+  // Names are locked fixture labels. ID differences are allowed; semantic aliases are not guessed.
+  const pairs=reference.conditions.map(c=>({expected:c,matches:graph.conditions.filter(x=>normal(x.name)===normal(c.name))}));
+  const mapped=new Map(pairs.filter(p=>p.matches.length===1).map(p=>[p.matches[0]!.id,p.expected.id]));
+  const ids=(values:string[])=>values.map(id=>mapped.get(id)??`UNMATCHED:${id}`);
+  const conditionMatch=pairs.every(p=>p.matches.length===1)&&graph.conditions.length===reference.conditions.length;
+  const stepMatch=graph.steps.length===reference.steps.length&&graph.steps.length===1;
+  const expectedStep=reference.steps[0]!;const actualStep=graph.steps[0];
+  const policies=graph.policyRules;
+  const spans=[...graph.conditions,...graph.policyRules,...graph.steps].flatMap(x=>x.sourceSpans);
+  return {schemaAndReferences:true,source:graph.sourceDocuments.length===1&&graph.sourceDocuments[0]?.text===reference.sourceDocuments[0]?.text&&graph.sourceDocuments[0]?.contentHash===reference.sourceDocuments[0]?.contentHash,conditions:conditionMatch,observations:conditionMatch&&pairs.every(p=>{const a=p.matches[0]!;const b=p.expected;return a.observedValue===b.observedValue&&a.expectedValue===b.expectedValue&&a.valueType===b.valueType&&a.freshnessRequirement===b.freshnessRequirement&&a.observedAt===b.observedAt;}),policy:stepMatch&&policies.length===reference.policyRules.length&&policies.every((p,i)=>p.subjectStepId===actualStep?.id&&p.predicate===reference.policyRules[i]?.predicate&&p.origin===reference.policyRules[i]?.origin&&sameSet(ids(p.requiredConditionIds),reference.policyRules[i]!.requiredConditionIds)),gates:stepMatch&&sameSet(ids(actualStep!.executionGateIds),expectedStep.executionGateIds),dependencies:stepMatch&&actualStep!.actionType===expectedStep.actionType&&actualStep!.dependsOn.length===0&&expectedStep.dependsOn.length===0,evidence:spans.length>0&&[...graph.conditions,...graph.policyRules,...graph.steps].every(x=>x.sourceSpans.length>0)&&spans.every(span=>{const source=graph.sourceDocuments.find(s=>s.id===span.sourceId);return span.verified&&!!span.excerpt.trim()&&source?.text.slice(span.startOffset,span.endOffset)===span.excerpt;})};
+}

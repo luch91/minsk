@@ -1,0 +1,175 @@
+{
+  "certificateVersion": "1",
+  "sourceHash": "689760aa3718fdd68850ef72643d3f0cbe8eb7856a55dce4c729c403ba880364",
+  "graphHash": "e2e848a7a486ea0c7f16943f8d43e074b4210301328eb1d8b9d8217fd7ca343d",
+  "baseline": {
+    "id": "238053455a31e5296578854ac5f2c7c4c00ae5d50e1ab61b7601ef33677d4958",
+    "scenarioId": "extracted",
+    "baselineHash": "e2e848a7a486ea0c7f16943f8d43e074b4210301328eb1d8b9d8217fd7ca343d",
+    "interventionHash": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+    "evaluatorVersion": "1.0.0",
+    "stepResults": [
+      {
+        "stepId": "s_deploy",
+        "eligibility": "SATISFIED",
+        "executes": true
+      }
+    ],
+    "policyResults": [
+      {
+        "ruleId": "pr_prod",
+        "state": "SATISFIED"
+      }
+    ],
+    "executionTrace": [
+      {
+        "sequence": 0,
+        "stepId": "s_deploy",
+        "status": "EXECUTED",
+        "reason": "Execution gates and dependencies satisfied"
+      }
+    ],
+    "affectedNodeIds": [],
+    "firstViolation": null,
+    "unknownConditions": [],
+    "outcome": "SAFE_EXECUTION",
+    "timestamp": "2026-11-02T04:45:03.829Z"
+  },
+  "intervention": {
+    "id": "meta-c_approval",
+    "targetConditionId": "c_approval",
+    "originalValue": true,
+    "replacementValue": false,
+    "reason": "Meta investigator hypothesis",
+    "proposedBy": "META_HOSTED",
+    "validated": true
+  },
+  "evaluationResult": {
+    "id": "4b30a51411dbf3a2295edd502c9c67c3fef28f7650a60373939cb92991517aa8",
+    "scenarioId": "extracted",
+    "baselineHash": "e2e848a7a486ea0c7f16943f8d43e074b4210301328eb1d8b9d8217fd7ca343d",
+    "interventionHash": "b4edca5a77dd743421a8f4ce9170a29f805f9be2317379b312a79cab36a9cbf7",
+    "evaluatorVersion": "1.0.0",
+    "stepResults": [
+      {
+        "stepId": "s_deploy",
+        "eligibility": "SATISFIED",
+        "executes": true
+      }
+    ],
+    "policyResults": [
+      {
+        "ruleId": "pr_prod",
+        "state": "VIOLATED"
+      }
+    ],
+    "executionTrace": [
+      {
+        "sequence": 0,
+        "stepId": "s_deploy",
+        "status": "EXECUTED",
+        "reason": "Execution gates and dependencies satisfied"
+      }
+    ],
+    "affectedNodeIds": [
+      "c_approval",
+      "s_deploy"
+    ],
+    "firstViolation": "pr_prod",
+    "unknownConditions": [],
+    "outcome": "UNSAFE_EXECUTION",
+    "timestamp": "2026-11-02T04:45:03.829Z"
+  },
+  "violatedRules": [
+    "pr_prod"
+  ],
+  "affectedPath": [
+    "c_approval",
+    "s_deploy"
+  ],
+  "safeguard": {
+    "stepId": "s_deploy",
+    "conditionId": "c_approval"
+  },
+  "verificationResult": {
+    "id": "1d5c268e7ec6e57f7754767b1d9aac43b9561b5d0c5ca29071dda8e18ecf1c0c",
+    "scenarioId": "extracted",
+    "baselineHash": "2d873bda66fb8247348af3575057a776f3f62e0828b1b0b670ed2e980d41c96a",
+    "interventionHash": "b4edca5a77dd743421a8f4ce9170a29f805f9be2317379b312a79cab36a9cbf7",
+    "evaluatorVersion": "1.0.0",
+    "stepResults": [
+      {
+        "stepId": "s_deploy",
+        "eligibility": "VIOLATED",
+        "executes": false
+      }
+    ],
+    "policyResults": [
+      {
+        "ruleId": "pr_prod",
+        "state": "VIOLATED"
+      }
+    ],
+    "executionTrace": [
+      {
+        "sequence": 0,
+        "stepId": "s_deploy",
+        "status": "BLOCKED",
+        "reason": "Execution gate violated"
+      }
+    ],
+    "affectedNodeIds": [
+      "c_approval",
+      "s_deploy"
+    ],
+    "firstViolation": null,
+    "unknownConditions": [],
+    "outcome": "SAFE_BLOCK",
+    "timestamp": "2026-11-02T04:45:03.829Z"
+  },
+  "modelMetadata": {
+    "provider": "Meta Model API",
+    "model": "muse-spark-1.3",
+    "responseIds": [
+      "resp_6ae814bcb1ba293992c6452b",
+      "resp_6ae814becfcd5ddbc03b4c9f"
+    ],
+    "toolCallIds": [
+      "call_e05199d4-3dd7-4a4f-9674-997d48d638ec",
+      "call_99250383-3a09-4330-ba0a-cace1aadcdca"
+    ],
+    "inputTokens": 1922,
+    "outputTokens": 352,
+    "calls": [
+      {
+        "modelId": "muse-spark-1.3",
+        "role": "COUNTERFACTUAL",
+        "responseId": "resp_6ae814bcb1ba293992c6452b",
+        "toolCallId": "call_e05199d4-3dd7-4a4f-9674-997d48d638ec",
+        "toolArgumentsJson": "{\"conditionId\":\"c_approval\",\"replacementValue\":false}",
+        "toolResultJson": "{\"outcome\":\"UNSAFE_EXECUTION\",\"firstViolation\":\"pr_prod\",\"policyResults\":[{\"ruleId\":\"pr_prod\",\"state\":\"VIOLATED\"}],\"stepResults\":[{\"stepId\":\"s_deploy\",\"eligibility\":\"SATISFIED\",\"executes\":true}]}",
+        "inputTokens": 818,
+        "outputTokens": 178,
+        "accountingStatus": "PROVIDER_USAGE",
+        "routingReason": "Routine validated workflow"
+      },
+      {
+        "modelId": "muse-spark-1.3",
+        "role": "SAFEGUARD",
+        "responseId": "resp_6ae814becfcd5ddbc03b4c9f",
+        "toolCallId": "call_99250383-3a09-4330-ba0a-cace1aadcdca",
+        "toolArgumentsJson": "{\"stepId\":\"s_deploy\",\"conditionId\":\"c_approval\"}",
+        "toolResultJson": "{\"repairedOutcome\":\"SAFE_BLOCK\",\"resolved\":true}",
+        "inputTokens": 1104,
+        "outputTokens": 174,
+        "accountingStatus": "PROVIDER_USAGE",
+        "routingReason": "Routine validated workflow"
+      }
+    ]
+  },
+  "evaluationMetadata": {
+    "evaluatorVersion": "1.0.0",
+    "generatedAt": "2026-11-02T04:45:03.979Z"
+  },
+  "integrityHash": "f02abfc0613de127a3abf420df8ad929bce655d068e4f53f3e5c88840a379d80"
+}

@@ -1,0 +1,77 @@
+{
+  "extraction": {
+    "id": "resp_6ae8148784423f87f21e45e5",
+    "modelId": "muse-spark-1.3",
+    "provider": "Meta Model API",
+    "role": "EXTRACTION",
+    "usage": {
+      "input_tokens": 588,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 978,
+      "output_tokens_details": {
+        "reasoning_tokens": 672
+      },
+      "total_tokens": 1566
+    },
+    "accountingStatus": "PROVIDER_USAGE",
+    "telemetry": {
+      "latencyMs": 5863,
+      "reservedMicroUsd": 16583,
+      "estimatedActualMicroUsd": 4892,
+      "providerChargeUsd": null
+    }
+  },
+  "investigation": {
+    "id": "resp_6ae814bcb1ba293992c6452b",
+    "modelId": "muse-spark-1.3",
+    "provider": "Meta Model API",
+    "role": "ROUTINE_INVESTIGATION",
+    "followupId": "resp_6ae814becfcd5ddbc03b4c9f",
+    "usage": {
+      "first": {
+        "input_tokens": 818,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 178,
+        "output_tokens_details": {
+          "reasoning_tokens": 83
+        },
+        "total_tokens": 996
+      },
+      "second": {
+        "input_tokens": 1104,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 174,
+        "output_tokens_details": {
+          "reasoning_tokens": 77
+        },
+        "total_tokens": 1278
+      }
+    },
+    "accountingStatus": "PROVIDER_USAGE",
+    "telemetry": [
+      {
+        "latencyMs": 2116,
+        "reservedMicroUsd": 15140,
+        "estimatedActualMicroUsd": 1779,
+        "providerChargeUsd": null
+      },
+      {
+        "latencyMs": 1767,
+        "reservedMicroUsd": 18329,
+        "estimatedActualMicroUsd": 2120,
+        "providerChargeUsd": null
+      }
+    ]
+  },
+  "routing": {
+    "modelId": "muse-spark-1.3",
+    "reason": "Routine validated workflow",
+    "escalated": false
+  }
+}
