@@ -27,7 +27,7 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm e2e
       - name: Verify isolated deployed preview
-        if: github.head_ref == 'feat/approved-workbench-integration'
+        if: github.head_ref == 'feat/approved-workbench-integration' || github.head_ref == 'fix/scenario-guidance'
         env:
           MINSK_STAGING_URL: https://approved-workbench.minsk-web-preview.pages.dev
           MINSK_API_URL: https://faultline-api-visual-preview.judithorluchee.workers.dev

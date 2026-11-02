@@ -82,3 +82,6 @@ p{color:#c5d5e1}
 .motion-settings{border:1px solid var(--line);padding:20px;margin-bottom:28px}
 .motion-settings p{margin:12px 0 0;font-size:11px}
 @media(max-width:700px){.sidebar{background:rgb(8 15 25 / 96%)}.motion-settings{padding:17px}.graph-scroll{background:rgb(6 13 21 / 35%)}}
+
+.scenario-hint{margin:8px 0 12px;color:var(--muted);font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+.posture-workspace>.scenario-hint{margin-inline:24px}

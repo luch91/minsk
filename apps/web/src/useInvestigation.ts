@@ -98,7 +98,7 @@ export function useInvestigation() {
   function verify() {
     if (!workflow || !applied) return;
     const stepId = workflow.policyRules.find(rule => rule.requiredConditionIds.includes(applied.targetConditionId))?.subjectStepId;
-    if (!stepId) return;
+    if (!stepId) {setError('This condition is not required by a policy rule. Choose a policy condition before verifying a safeguard.');return;}
     return run('Verifying safeguard', s => call<{ repaired: EvaluationResult; resolved: boolean }>('/api/v1/safeguards/verify', { workflow, intervention: applied, stepId, conditionId: applied.targetConditionId }, s), x => { setCertificate(null); if(verification&&(verification.safeguard.stepId!==stepId||verification.safeguard.conditionId!==applied.targetConditionId))setInvestigationId(null); setVerification({ ...x, safeguard: { stepId, conditionId: applied.targetConditionId } }); setScenario('SAFEGUARD'); });
   }
   function exportCertificate() {
