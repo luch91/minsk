@@ -20,9 +20,9 @@
     "benchmark:checks": "tsc -p model-evaluation/tsconfig.json && pnpm --filter @minsk/api exec vitest run --root ../.. --config apps/api/vitest.config.ts model-evaluation/runner.test.ts"
   },
   "devDependencies": {
-    "@eslint/js": "^9.38.0",
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.64.1",
-    "eslint": "^9.38.0",
+    "eslint": "^10.14.0",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.0"
