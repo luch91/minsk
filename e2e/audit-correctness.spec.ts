@@ -1,6 +1,8 @@
 import {expect,test,type Page} from '@playwright/test';
 import multiStepCase from '../benchmark/cases/MFB-10.json' with {type:'json'};
 
+test.setTimeout(30_000);
+
 async function navigate(page:Page,name:string){const menu=page.getByRole('button',{name:'Open navigation',exact:true});if(await menu.isVisible())await menu.click();await page.getByRole('navigation').getByRole('button',{name,exact:false}).click();}
 async function start(page:Page){await page.goto('/');await expect(page.getByRole('button',{name:'Inspect Safe execution',exact:true})).toBeAttached();}
 async function openImport(page:Page){await navigate(page,'Workflows');await page.getByRole('button',{name:'Import or edit JSON',exact:true}).click();return page.getByRole('dialog',{name:'Inspection panel'});}
