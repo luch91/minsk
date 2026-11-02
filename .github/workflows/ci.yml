@@ -27,13 +27,18 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm e2e
       - name: Verify isolated deployed preview
-        if: github.head_ref == 'feat/approved-workbench-integration' || github.head_ref == 'fix/scenario-guidance'
+        if: github.head_ref == 'feat/approved-workbench-integration' || github.head_ref == 'fix/scenario-guidance' || github.head_ref == 'fix/audit-correctness'
         env:
           MINSK_STAGING_URL: https://approved-workbench.minsk-web-preview.pages.dev
           MINSK_API_URL: https://faultline-api-visual-preview.judithorluchee.workers.dev
           PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-public
+          MINSK_EXPECTED_COMMIT: ${{ github.event.pull_request.head.sha }}
+          MINSK_CHECK_PREVIEW_COMMIT: ${{ github.head_ref == 'fix/audit-correctness' }}
         run: |
           node --input-type=module -e "const r=await fetch(process.env.MINSK_API_URL+'/api/v1/budget'); if(!r.ok)throw new Error('Review API unavailable'); const b=await r.json(); if(b.liveModelEnabled||b.openWeightEnabled||b.publicChallengerEnabled||b.configuration?.keyPresent)throw new Error('Review API must have all providers disabled and no provider key'); console.log('Review API provider isolation verified');"
+          if [ "$MINSK_CHECK_PREVIEW_COMMIT" = "true" ]; then
+            node --input-type=module -e "const r=await fetch(process.env.MINSK_STAGING_URL+'/build-info.json'); if(!r.ok)throw new Error('Preview build identity unavailable'); const b=await r.json(); if(b.sourceCommit!==process.env.MINSK_EXPECTED_COMMIT||b.apiOrigin!==process.env.MINSK_API_URL)throw new Error('Preview does not match the tested source and isolated API'); console.log('Deployed source commit verified: '+b.sourceCommit);"
+          fi
           pnpm e2e --output=test-results-public
       - uses: actions/upload-artifact@v4
         if: always()
