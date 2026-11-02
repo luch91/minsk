@@ -1,5 +1,5 @@
 import {expect,test,type Page} from '@playwright/test';
-async function navigate(page:Page,name:string){const menu=page.getByRole('button',{name:'Open navigation',exact:true});if(await menu.isVisible())await menu.click();await page.getByRole('navigation').getByRole('button',{name,exact:false}).click();}
+async function navigate(page:Page,name:string){await expect(page.locator('.overview-header h1')).toBeVisible();const menu=page.getByRole('button',{name:'Open navigation',exact:true});if(await menu.isVisible())await menu.click();await page.getByRole('navigation').getByRole('button',{name,exact:false}).click();}
 
 test('one continuous interference field survives navigation, tabs and inspection',async({page})=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
