@@ -1,6 +1,6 @@
 # Minsk deployment
 
-The canonical judge production URL is https://minsk-web-preview.pages.dev and its API is https://minsk-api-preview.judithorluchee.workers.dev. The release-candidate alias is https://release-candidate.minsk-web-preview.pages.dev. Both use the `minsk-web-preview` Pages project and the `minsk-api-preview` Worker configured by `apps/api/wrangler.preview.jsonc`.
+The canonical judge production URL is https://minsk.pages.dev and its API is https://minsk-api-preview.judithorluchee.workers.dev. The release-candidate alias is https://release-candidate.minsk.pages.dev. Both use the `minsk` Pages project and the `minsk-api-preview` Worker configured by `apps/api/wrangler.preview.jsonc`. The former `minsk-web-preview` project remains a temporary rollback target and is not the canonical judge endpoint.
 
 The authoritative environment names, URLs and provider modes are maintained in `config/release-manifest.json` and rendered in [the release reference](release-reference.md). The `approved-workbench` Pages alias and `faultline-api-visual-preview` Worker are historical deterministic-review resources, not current release endpoints.
 

@@ -1,8 +1,8 @@
 # Minsk release certification checklist
 
-Release candidate: https://release-candidate.minsk-web-preview.pages.dev
+Release candidate: https://release-candidate.minsk.pages.dev
 
-Canonical judge URL: https://minsk-web-preview.pages.dev
+Canonical judge URL: https://minsk.pages.dev
 
 Source completion and production promotion are separate decisions. A source commit is eligible for promotion only after every automated gate below passes. The production URL is certified only after the same commit is deployed to the release-candidate alias, the deployed checks pass, and the owner authorizes promotion. This checklist does not authorize a merge, deployment, provider request, or submission.
 

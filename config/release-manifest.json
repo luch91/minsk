@@ -3,7 +3,7 @@
   "product": {
     "name": "Minsk",
     "repository": "luch91/minsk",
-    "judgeUrl": "https://minsk-web-preview.pages.dev"
+    "judgeUrl": "https://minsk.pages.dev"
   },
   "judgeActions": {
     "liveExtraction": "Try live extraction",
@@ -15,8 +15,8 @@
     "production": {
       "label": "Judge production",
       "status": "current",
-      "frontendUrl": "https://minsk-web-preview.pages.dev",
-      "pagesProject": "minsk-web-preview",
+      "frontendUrl": "https://minsk.pages.dev",
+      "pagesProject": "minsk",
       "pagesBranch": "main",
       "apiUrl": "https://minsk-api-preview.judithorluchee.workers.dev",
       "workerName": "minsk-api-preview",
@@ -26,8 +26,8 @@
     "releaseCandidate": {
       "label": "Release candidate",
       "status": "current",
-      "frontendUrl": "https://release-candidate.minsk-web-preview.pages.dev",
-      "pagesProject": "minsk-web-preview",
+      "frontendUrl": "https://release-candidate.minsk.pages.dev",
+      "pagesProject": "minsk",
       "pagesBranch": "release-candidate",
       "apiUrl": "https://minsk-api-preview.judithorluchee.workers.dev",
       "workerName": "minsk-api-preview",
