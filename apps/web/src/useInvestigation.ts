@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { EvaluationResult, Intervention, Workflow } from '@minsk/contracts';
+import { missingApproval } from '../../../fixtures/workflows/missing-approval';
 
 export type ModelRecord = { id: string | null; modelId: string; provider: string; role: string; usage: unknown; accountingStatus: string };
 export type Investigation = { investigationId?: string; baseline: EvaluationResult; intervention: Intervention; failure: EvaluationResult; verification: { repaired: EvaluationResult; safeguard: { stepId: string; conditionId: string }; resolved: boolean } | null; trace: Array<{ id: string; tool: string; status: string; arguments: unknown; result: unknown; modelId?: string; responseId?: string | null }>; routing?: {modelId:string;reason:string;escalated:boolean}; model: ModelRecord };
@@ -22,10 +23,10 @@ export async function call<T>(path: string, body?: unknown, signal?: AbortSignal
 }
 
 export function useInvestigation() {
-  const [samples, setSamples] = useState<Workflow[]>([]);
-  const [workflow, setWorkflow] = useState<Workflow | null>(null);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [source, setSource] = useState('');
+  const [samples, setSamples] = useState<Workflow[]>([missingApproval]);
+  const [workflow, setWorkflow] = useState<Workflow | null>(missingApproval);
+  const [selected, setSelected] = useState<string | null>(missingApproval.steps[0]?.id ?? missingApproval.conditions[0]?.id ?? null);
+  const [source, setSource] = useState(missingApproval.sourceDocuments[0]?.text ?? '');
   const [baseline, setBaseline] = useState<EvaluationResult | null>(null);
   const [failure, setFailure] = useState<EvaluationResult | null>(null);
   const [verification, setVerification] = useState<Investigation['verification']>(null);
@@ -53,15 +54,21 @@ export function useInvestigation() {
   useEffect(() => {
     const ac = new AbortController();
     const initialRevision=revision.current;
-    call<{ samples: Workflow[] }>('/api/v1/samples', undefined, ac.signal).then(async response => {
-      if (ac.signal.aborted||revision.current!==initialRevision) return;
-      setSamples(response.samples);
-      const first = response.samples.find(sample=>sample.id==='missing-approval')??response.samples[0];
-      if (!first) return;
-      setWorkflow(first); setSelected(first.steps[0]?.id ?? first.conditions[0]?.id ?? null); setSource(first.sourceDocuments[0]?.text ?? '');
-      const evaluated = await call<{ result: EvaluationResult }>('/api/v1/experiments/run', { workflow: first }, ac.signal);
+    let acceptedRevision=initialRevision;
+    const loadSamples=call<{ samples: Workflow[] }>('/api/v1/samples', undefined, ac.signal).then(async response => {
+      if (ac.signal.aborted) return;
+      setSamples(response.samples.length?response.samples:[missingApproval]);
+      const first=response.samples.find(sample=>sample.id==='missing-approval')??response.samples[0];
+      if(!first||revision.current!==initialRevision||JSON.stringify(first)===JSON.stringify(missingApproval))return;
+      acceptedRevision=++revision.current;
+      setWorkflow(first);setSelected(first.steps[0]?.id??first.conditions[0]?.id??null);setSource(first.sourceDocuments[0]?.text??'');setBaseline(null);
+      const evaluated=await call<{result:EvaluationResult}>('/api/v1/experiments/run',{workflow:first},ac.signal);
+      if(!ac.signal.aborted&&revision.current===acceptedRevision)setBaseline(evaluated.result);
+    }).catch(e => { if (!ac.signal.aborted&&revision.current===acceptedRevision) setError(e instanceof Error?e.message:'Workflow library request failed'); });
+    const loadBaseline=call<{ result: EvaluationResult }>('/api/v1/experiments/run', { workflow: missingApproval }, ac.signal).then(evaluated => {
       if (!ac.signal.aborted&&revision.current===initialRevision) setBaseline(evaluated.result);
-    }).catch(e => { if (!ac.signal.aborted&&revision.current===initialRevision) setError(e.message); }).finally(() => { if (!ac.signal.aborted) setLoading(false); });
+    }).catch(e => { if (!ac.signal.aborted&&revision.current===initialRevision) setError(e instanceof Error?e.message:'Initial evaluation failed'); });
+    Promise.allSettled([loadSamples,loadBaseline]).finally(() => { if (!ac.signal.aborted) setLoading(false); });
     refreshBudget(ac.signal);
     return () => { ac.abort(); controller.current?.abort(); };
   }, []);
