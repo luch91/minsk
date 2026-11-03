@@ -1,833 +1,408 @@
 {
+  "version": "2",
+  "caseId": "RW-CI-01",
+  "classification": "Verified historical public configuration reference; excluded from synthetic benchmark and accuracy metrics",
   "source": {
-    "url": "https://github.com/luch91/minsk/blob/main/.github/workflows/ci.yml",
+    "canonicalUrl": "https://github.com/luch91/minsk/blob/0769cb10564c9c56f4e9467e98e4c6151e21426f/.github/workflows/ci.yml",
+    "repositoryPath": ".github/workflows/ci.yml",
+    "revision": "0769cb10564c9c56f4e9467e98e4c6151e21426f",
     "retrievedAt": "2026-11-02",
-    "sha256": "2857fd50ea7b8b442277909d00789b4f2bc842c84a759c1acc83dc9afdc49afe",
-    "text": "name: CI\non:\n  push:\n  pull_request:\njobs:\n  verify:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: pnpm/action-setup@v4\n        with:\n          version: 10.18.3\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 22\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm check:content\n      - run: pnpm check:secrets\n      - run: pnpm typecheck\n      - run: pnpm lint\n      - run: pnpm test\n      - run: pnpm benchmark\n      - run: pnpm benchmark:checks\n      - run: pnpm build\n      - run: pnpm audit\n      - run: pnpm exec playwright install --with-deps chromium\n      - run: pnpm e2e --max-failures=1\n      - name: Verify isolated deployed preview\n        if: github.head_ref == 'feat/approved-workbench-integration' || github.head_ref == 'fix/scenario-guidance' || github.head_ref == 'fix/audit-correctness'\n        env:\n          MINSK_STAGING_URL: https://approved-workbench.minsk-web-preview.pages.dev\n          MINSK_API_URL: https://faultline-api-visual-preview.judithorluchee.workers.dev\n          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-public\n          MINSK_EXPECTED_COMMIT: ${{ github.event.pull_request.head.sha }}\n          MINSK_CHECK_PREVIEW_COMMIT: ${{ github.head_ref == 'fix/audit-correctness' }}\n        run: |\n          node --input-type=module -e \"const r=await fetch(process.env.MINSK_API_URL+'/api/v1/budget'); if(!r.ok)throw new Error('Review API unavailable'); const b=await r.json(); if(b.liveModelEnabled||b.openWeightEnabled||b.publicChallengerEnabled||b.configuration?.keyPresent)throw new Error('Review API must have all providers disabled and no provider key'); console.log('Review API provider isolation verified');\"\n          if [ \"$MINSK_CHECK_PREVIEW_COMMIT\" = \"true\" ]; then\n            node --input-type=module -e \"const r=await fetch(process.env.MINSK_STAGING_URL+'/build-info.json'); if(!r.ok)throw new Error('Preview build identity unavailable'); const b=await r.json(); if(b.sourceCommit!==process.env.MINSK_EXPECTED_COMMIT||b.apiOrigin!==process.env.MINSK_API_URL)throw new Error('Preview does not match the tested source and isolated API'); console.log('Deployed source commit verified: '+b.sourceCommit);\"\n          fi\n          pnpm e2e --max-failures=1 --output=test-results-public\n      - uses: actions/upload-artifact@v4\n        if: always()\n        with:\n          name: minsk-browser-evidence\n          path: |\n            test-results/\n            playwright-report/\n            test-results-public/\n            playwright-report-public/\n          if-no-files-found: ignore\n"
-  },
-  "responseStatus": 200,
-  "correlationId": "d858fd94-1b58-4f7e-bcc5-b944fe677346",
-  "result": {
-    "workflow": {
-      "schemaVersion": "1.0.0",
-      "id": "extracted",
-      "title": "CI verify isolated deployed preview",
-      "sourceDocuments": [
-        {
-          "id": "input",
-          "text": "name: CI\non:\n  push:\n  pull_request:\njobs:\n  verify:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: pnpm/action-setup@v4\n        with:\n          version: 10.18.3\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 22\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm check:content\n      - run: pnpm check:secrets\n      - run: pnpm typecheck\n      - run: pnpm lint\n      - run: pnpm test\n      - run: pnpm benchmark\n      - run: pnpm benchmark:checks\n      - run: pnpm build\n      - run: pnpm audit\n      - run: pnpm exec playwright install --with-deps chromium\n      - run: pnpm e2e --max-failures=1\n      - name: Verify isolated deployed preview\n        if: github.head_ref == 'feat/approved-workbench-integration' || github.head_ref == 'fix/scenario-guidance' || github.head_ref == 'fix/audit-correctness'\n        env:\n          MINSK_STAGING_URL: https://approved-workbench.minsk-web-preview.pages.dev\n          MINSK_API_URL: https://faultline-api-visual-preview.judithorluchee.workers.dev\n          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-public\n          MINSK_EXPECTED_COMMIT: ${{ github.event.pull_request.head.sha }}\n          MINSK_CHECK_PREVIEW_COMMIT: ${{ github.head_ref == 'fix/audit-correctness' }}\n        run: |\n          node --input-type=module -e \"const r=await fetch(process.env.MINSK_API_URL+'/api/v1/budget'); if(!r.ok)throw new Error('Review API unavailable'); const b=await r.json(); if(b.liveModelEnabled||b.openWeightEnabled||b.publicChallengerEnabled||b.configuration?.keyPresent)throw new Error('Review API must have all providers disabled and no provider key'); console.log('Review API provider isolation verified');\"\n          if [ \"$MINSK_CHECK_PREVIEW_COMMIT\" = \"true\" ]; then\n            node --input-type=module -e \"const r=await fetch(process.env.MINSK_STAGING_URL+'/build-info.json'); if(!r.ok)throw new Error('Preview build identity unavailable'); const b=await r.json(); if(b.sourceCommit!==process.env.MINSK_EXPECTED_COMMIT||b.apiOrigin!==process.env.MINSK_API_URL)throw new Error('Preview does not match the tested source and isolated API'); console.log('Deployed source commit verified: '+b.sourceCommit);\"\n          fi\n          pnpm e2e --max-failures=1 --output=test-results-public\n      - uses: actions/upload-artifact@v4\n        if: always()\n        with:\n          name: minsk-browser-evidence\n          path: |\n            test-results/\n            playwright-report/\n            test-results-public/\n            playwright-report-public/\n          if-no-files-found: ignore\n",
-          "contentHash": "2857fd50ea7b8b442277909d00789b4f2bc842c84a759c1acc83dc9afdc49afe",
-          "createdAt": "2026-11-02T21:00:03.661Z",
-          "schemaVersion": "1.0.0"
-        }
-      ],
-      "conditions": [
-        {
-          "id": "c_live_model",
-          "name": "Review API liveModelEnabled disabled",
-          "valueType": "BOOLEAN",
-          "expectedValue": false,
-          "observedValue": null,
-          "sourceSpans": [
-            {
-              "sourceId": "input",
-              "startOffset": 1513,
-              "endOffset": 1531,
-              "excerpt": "b.liveModelEnabled",
-              "verified": true
-            }
-          ],
-          "freshnessRequirement": null,
-          "observedAt": null
-        },
-        {
-          "id": "c_open_weight",
-          "name": "Review API openWeightEnabled disabled",
-          "valueType": "BOOLEAN",
-          "expectedValue": false,
-          "observedValue": null,
-          "sourceSpans": [
-            {
-              "sourceId": "input",
-              "startOffset": 1533,
-              "endOffset": 1552,
-              "excerpt": "b.openWeightEnabled",
-              "verified": true
-            }
-          ],
-          "freshnessRequirement": null,
-          "observedAt": null
-        },
-        {
-          "id": "c_public_challenger",
-          "name": "Review API publicChallengerEnabled disabled",
-          "valueType": "BOOLEAN",
-          "expectedValue": false,
-          "observedValue": null,
-          "sourceSpans": [
-            {
-              "sourceId": "input",
-              "startOffset": 1554,
-              "endOffset": 1579,
-              "excerpt": "b.publicChallengerEnabled",
-              "verified": true
-            }
-          ],
-          "freshnessRequirement": null,
-          "observedAt": null
-        },
-        {
-          "id": "c_key_present",
-          "name": "Review API no provider key present",
-          "valueType": "BOOLEAN",
-          "expectedValue": false,
-          "observedValue": null,
-          "sourceSpans": [
-            {
-              "sourceId": "input",
-              "startOffset": 1581,
-              "endOffset": 1608,
-              "excerpt": "b.configuration?.keyPresent",
-              "verified": true
-            }
-          ],
-          "freshnessRequirement": null,
-          "observedAt": null
-        },
-        {
-          "id": "c_source_commit_mismatch",
-          "name": "Preview sourceCommit mismatch absent",
-          "valueType": "BOOLEAN",
-          "expectedValue": false,
-          "observedValue": null,
-          "sourceSpans": [
-            {
-              "sourceId": "input",
-              "startOffset": 2014,
-              "endOffset": 2064,
-              "excerpt": "b.sourceCommit!==process.env.MINSK_EXPECTED_COMMIT",
-              "verified": true
-            }
-          ],
-          "freshnessRequirement": null,
-          "observedAt": null
-        },
-        {
-          "id": "c_api_origin_mismatch",
-          "name": "Preview apiOrigin mismatch absent",
-          "valueType": "BOOLEAN",
-          "expectedValue": false,
-          "observedValue": null,
-          "sourceSpans": [
-            {
-              "sourceId": "input",
-              "startOffset": 2066,
-              "endOffset": 2105,
-              "excerpt": "b.apiOrigin!==process.env.MINSK_API_URL",
-              "verified": true
-            }
-          ],
-          "freshnessRequirement": null,
-          "observedAt": null
-        },
-        {
-          "id": "c_branch_workbench",
-          "name": "Head ref is feat/approved-workbench-integration",
-          "valueType": "BOOLEAN",
-          "expectedValue": true,
-          "observedValue": null,
-          "sourceSpans": [
-            {
-              "sourceId": "input",
-              "startOffset": 754,
-              "endOffset": 810,
-              "excerpt": "github.head_ref == 'feat/approved-workbench-integration'",
-              "verified": true
-            }
-          ],
-          "freshnessRequirement": null,
-          "observedAt": null
-        },
-        {
-          "id": "c_branch_guidance",
-          "name": "Head ref is fix/scenario-guidance",
-          "valueType": "BOOLEAN",
-          "expectedValue": true,
-          "observedValue": null,
-          "sourceSpans": [
-            {
-              "sourceId": "input",
-              "startOffset": 814,
-              "endOffset": 856,
-              "excerpt": "github.head_ref == 'fix/scenario-guidance'",
-              "verified": true
-            }
-          ],
-          "freshnessRequirement": null,
-          "observedAt": null
-        },
-        {
-          "id": "c_branch_audit",
-          "name": "Head ref is fix/audit-correctness",
-          "valueType": "BOOLEAN",
-          "expectedValue": true,
-          "observedValue": null,
-          "sourceSpans": [
-            {
-              "sourceId": "input",
-              "startOffset": 860,
-              "endOffset": 902,
-              "excerpt": "github.head_ref == 'fix/audit-correctness'",
-              "verified": true
-            }
-          ],
-          "freshnessRequirement": null,
-          "observedAt": null
-        },
-        {
-          "id": "c_check_preview_commit",
-          "name": "Preview commit check enabled",
-          "valueType": "BOOLEAN",
-          "expectedValue": true,
-          "observedValue": null,
-          "sourceSpans": [
-            {
-              "sourceId": "input",
-              "startOffset": 1237,
-              "endOffset": 1263,
-              "excerpt": "MINSK_CHECK_PREVIEW_COMMIT",
-              "verified": true
-            }
-          ],
-          "freshnessRequirement": null,
-          "observedAt": null
-        }
-      ],
-      "policyRules": [
-        {
-          "id": "p_api_isolation",
-          "description": "Review API isolation requires all providers disabled and no key",
-          "subjectStepId": "s_verify_preview",
-          "predicate": "ALL",
-          "requiredConditionIds": [
-            "c_live_model",
-            "c_open_weight",
-            "c_public_challenger",
-            "c_key_present"
-          ],
-          "sourceSpans": [
-            {
-              "sourceId": "input",
-              "startOffset": 1626,
-              "endOffset": 1689,
-              "excerpt": "Review API must have all providers disabled and no provider key",
-              "verified": true
-            }
-          ],
-          "origin": "EXPLICIT"
-        },
-        {
-          "id": "p_preview_identity",
-          "description": "Preview must match tested source and isolated API",
-          "subjectStepId": "s_verify_preview",
-          "predicate": "ALL",
-          "requiredConditionIds": [
-            "c_source_commit_mismatch",
-            "c_api_origin_mismatch"
-          ],
-          "sourceSpans": [
-            {
-              "sourceId": "input",
-              "startOffset": 2123,
-              "endOffset": 2180,
-              "excerpt": "Preview does not match the tested source and isolated API",
-              "verified": true
-            }
-          ],
-          "origin": "EXPLICIT"
-        }
-      ],
-      "steps": [
-        {
-          "id": "s_install",
-          "name": "pnpm install",
-          "actionType": "CHECK",
-          "dependsOn": [],
-          "executionGateIds": [],
-          "sourceSpans": [
-            {
-              "sourceId": "input",
-              "startOffset": 313,
-              "endOffset": 343,
-              "excerpt": "pnpm install --frozen-lockfile",
-              "verified": true
-            }
-          ]
-        },
-        {
-          "id": "s_build",
-          "name": "pnpm build",
-          "actionType": "CHECK",
-          "dependsOn": [
-            "s_install"
-          ],
-          "executionGateIds": [],
-          "sourceSpans": [
-            {
-              "sourceId": "input",
-              "startOffset": 558,
-              "endOffset": 568,
-              "excerpt": "pnpm build",
-              "verified": true
-            }
-          ]
-        },
-        {
-          "id": "s_e2e",
-          "name": "pnpm e2e",
-          "actionType": "CHECK",
-          "dependsOn": [
-            "s_build"
-          ],
-          "executionGateIds": [],
-          "sourceSpans": [
-            {
-              "sourceId": "input",
-              "startOffset": 669,
-              "endOffset": 694,
-              "excerpt": "pnpm e2e --max-failures=1",
-              "verified": true
-            }
-          ]
-        },
-        {
-          "id": "s_verify_preview",
-          "name": "Verify isolated deployed preview",
-          "actionType": "CHECK",
-          "dependsOn": [
-            "s_e2e"
-          ],
-          "executionGateIds": [
-            "c_branch_workbench",
-            "c_branch_guidance",
-            "c_branch_audit"
-          ],
-          "sourceSpans": [
-            {
-              "sourceId": "input",
-              "startOffset": 709,
-              "endOffset": 741,
-              "excerpt": "Verify isolated deployed preview",
-              "verified": true
-            }
-          ]
-        },
-        {
-          "id": "s_e2e_public",
-          "name": "e2e against isolated preview",
-          "actionType": "CHECK",
-          "dependsOn": [
-            "s_verify_preview"
-          ],
-          "executionGateIds": [
-            "c_branch_workbench",
-            "c_branch_guidance",
-            "c_branch_audit"
-          ],
-          "sourceSpans": [
-            {
-              "sourceId": "input",
-              "startOffset": 2273,
-              "endOffset": 2327,
-              "excerpt": "pnpm e2e --max-failures=1 --output=test-results-public",
-              "verified": true
-            }
-          ]
-        }
-      ]
+    "licence": {
+      "spdx": "MIT",
+      "url": "https://github.com/luch91/minsk/blob/0769cb10564c9c56f4e9467e98e4c6151e21426f/LICENSE"
     },
-    "model": {
-      "id": "resp_6ae8f9d39f6ec25ccbdb490d",
-      "modelId": "muse-spark-1.3",
-      "provider": "Meta Model API",
-      "role": "EXTRACTION",
-      "usage": {
-        "input_tokens": 1207,
-        "input_tokens_details": {
-          "cached_tokens": 0
-        },
-        "output_tokens": 2211,
-        "output_tokens_details": {
-          "reasoning_tokens": 1149
-        },
-        "total_tokens": 3418
+    "snapshotFile": "model-evaluation/real-world-reference/source-ci-0769cb1.yml",
+    "sha256": "2857fd50ea7b8b442277909d00789b4f2bc842c84a759c1acc83dc9afdc49afe"
+  },
+  "extractedText": {
+    "snapshotFile": "model-evaluation/real-world-reference/source-ci-0769cb1.yml",
+    "excerpts": [
+      {
+        "entityId": "c_review_branch",
+        "startOffset": 754,
+        "endOffset": 902,
+        "excerpt": "github.head_ref == 'feat/approved-workbench-integration' || github.head_ref == 'fix/scenario-guidance' || github.head_ref == 'fix/audit-correctness'"
       },
-      "accountingStatus": "PROVIDER_USAGE",
-      "telemetry": {
-        "latencyMs": 10413,
-        "reservedMicroUsd": 19514,
-        "estimatedActualMicroUsd": 10906,
-        "providerChargeUsd": null
+      {
+        "entityId": "c_live_model",
+        "startOffset": 1513,
+        "endOffset": 1531,
+        "excerpt": "b.liveModelEnabled"
+      },
+      {
+        "entityId": "c_open_weight",
+        "startOffset": 1533,
+        "endOffset": 1552,
+        "excerpt": "b.openWeightEnabled"
+      },
+      {
+        "entityId": "c_public_challenger",
+        "startOffset": 1554,
+        "endOffset": 1579,
+        "excerpt": "b.publicChallengerEnabled"
+      },
+      {
+        "entityId": "c_key_present",
+        "startOffset": 1581,
+        "endOffset": 1608,
+        "excerpt": "b.configuration?.keyPresent"
+      },
+      {
+        "entityId": "c_source_commit_mismatch",
+        "startOffset": 2014,
+        "endOffset": 2064,
+        "excerpt": "b.sourceCommit!==process.env.MINSK_EXPECTED_COMMIT"
+      },
+      {
+        "entityId": "c_api_origin_mismatch",
+        "startOffset": 2066,
+        "endOffset": 2105,
+        "excerpt": "b.apiOrigin!==process.env.MINSK_API_URL"
+      },
+      {
+        "entityId": "p_api_isolation",
+        "startOffset": 1626,
+        "endOffset": 1689,
+        "excerpt": "Review API must have all providers disabled and no provider key"
+      },
+      {
+        "entityId": "p_preview_identity",
+        "startOffset": 2123,
+        "endOffset": 2180,
+        "excerpt": "Preview does not match the tested source and isolated API"
+      },
+      {
+        "entityId": "s_install",
+        "startOffset": 313,
+        "endOffset": 343,
+        "excerpt": "pnpm install --frozen-lockfile"
+      },
+      {
+        "entityId": "s_build",
+        "startOffset": 558,
+        "endOffset": 568,
+        "excerpt": "pnpm build"
+      },
+      {
+        "entityId": "s_e2e",
+        "startOffset": 669,
+        "endOffset": 694,
+        "excerpt": "pnpm e2e --max-failures=1"
+      },
+      {
+        "entityId": "s_verify_preview",
+        "startOffset": 709,
+        "endOffset": 741,
+        "excerpt": "Verify isolated deployed preview"
+      },
+      {
+        "entityId": "s_e2e_public",
+        "startOffset": 2273,
+        "endOffset": 2327,
+        "excerpt": "pnpm e2e --max-failures=1 --output=test-results-public"
       }
-    }
+    ]
   },
-  "validation": {
-    "status": 200,
-    "correlationId": "1c43da29-52ad-4727-bc09-a53a5becc031",
-    "result": {
-      "workflow": {
-        "schemaVersion": "1.0.0",
-        "id": "extracted",
-        "title": "CI verify isolated deployed preview",
-        "sourceDocuments": [
-          {
-            "id": "input",
-            "text": "name: CI\non:\n  push:\n  pull_request:\njobs:\n  verify:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: pnpm/action-setup@v4\n        with:\n          version: 10.18.3\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 22\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm check:content\n      - run: pnpm check:secrets\n      - run: pnpm typecheck\n      - run: pnpm lint\n      - run: pnpm test\n      - run: pnpm benchmark\n      - run: pnpm benchmark:checks\n      - run: pnpm build\n      - run: pnpm audit\n      - run: pnpm exec playwright install --with-deps chromium\n      - run: pnpm e2e --max-failures=1\n      - name: Verify isolated deployed preview\n        if: github.head_ref == 'feat/approved-workbench-integration' || github.head_ref == 'fix/scenario-guidance' || github.head_ref == 'fix/audit-correctness'\n        env:\n          MINSK_STAGING_URL: https://approved-workbench.minsk-web-preview.pages.dev\n          MINSK_API_URL: https://faultline-api-visual-preview.judithorluchee.workers.dev\n          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-public\n          MINSK_EXPECTED_COMMIT: ${{ github.event.pull_request.head.sha }}\n          MINSK_CHECK_PREVIEW_COMMIT: ${{ github.head_ref == 'fix/audit-correctness' }}\n        run: |\n          node --input-type=module -e \"const r=await fetch(process.env.MINSK_API_URL+'/api/v1/budget'); if(!r.ok)throw new Error('Review API unavailable'); const b=await r.json(); if(b.liveModelEnabled||b.openWeightEnabled||b.publicChallengerEnabled||b.configuration?.keyPresent)throw new Error('Review API must have all providers disabled and no provider key'); console.log('Review API provider isolation verified');\"\n          if [ \"$MINSK_CHECK_PREVIEW_COMMIT\" = \"true\" ]; then\n            node --input-type=module -e \"const r=await fetch(process.env.MINSK_STAGING_URL+'/build-info.json'); if(!r.ok)throw new Error('Preview build identity unavailable'); const b=await r.json(); if(b.sourceCommit!==process.env.MINSK_EXPECTED_COMMIT||b.apiOrigin!==process.env.MINSK_API_URL)throw new Error('Preview does not match the tested source and isolated API'); console.log('Deployed source commit verified: '+b.sourceCommit);\"\n          fi\n          pnpm e2e --max-failures=1 --output=test-results-public\n      - uses: actions/upload-artifact@v4\n        if: always()\n        with:\n          name: minsk-browser-evidence\n          path: |\n            test-results/\n            playwright-report/\n            test-results-public/\n            playwright-report-public/\n          if-no-files-found: ignore\n",
-            "contentHash": "2857fd50ea7b8b442277909d00789b4f2bc842c84a759c1acc83dc9afdc49afe",
-            "createdAt": "2026-11-02T21:00:03.661Z",
-            "schemaVersion": "1.0.0"
-          }
-        ],
-        "conditions": [
-          {
-            "id": "c_live_model",
-            "name": "Review API liveModelEnabled disabled",
-            "valueType": "BOOLEAN",
-            "expectedValue": false,
-            "observedValue": null,
-            "sourceSpans": [
-              {
-                "sourceId": "input",
-                "startOffset": 1513,
-                "endOffset": 1531,
-                "excerpt": "b.liveModelEnabled",
-                "verified": true
-              }
-            ],
-            "freshnessRequirement": null,
-            "observedAt": null
-          },
-          {
-            "id": "c_open_weight",
-            "name": "Review API openWeightEnabled disabled",
-            "valueType": "BOOLEAN",
-            "expectedValue": false,
-            "observedValue": null,
-            "sourceSpans": [
-              {
-                "sourceId": "input",
-                "startOffset": 1533,
-                "endOffset": 1552,
-                "excerpt": "b.openWeightEnabled",
-                "verified": true
-              }
-            ],
-            "freshnessRequirement": null,
-            "observedAt": null
-          },
-          {
-            "id": "c_public_challenger",
-            "name": "Review API publicChallengerEnabled disabled",
-            "valueType": "BOOLEAN",
-            "expectedValue": false,
-            "observedValue": null,
-            "sourceSpans": [
-              {
-                "sourceId": "input",
-                "startOffset": 1554,
-                "endOffset": 1579,
-                "excerpt": "b.publicChallengerEnabled",
-                "verified": true
-              }
-            ],
-            "freshnessRequirement": null,
-            "observedAt": null
-          },
-          {
-            "id": "c_key_present",
-            "name": "Review API no provider key present",
-            "valueType": "BOOLEAN",
-            "expectedValue": false,
-            "observedValue": null,
-            "sourceSpans": [
-              {
-                "sourceId": "input",
-                "startOffset": 1581,
-                "endOffset": 1608,
-                "excerpt": "b.configuration?.keyPresent",
-                "verified": true
-              }
-            ],
-            "freshnessRequirement": null,
-            "observedAt": null
-          },
-          {
-            "id": "c_source_commit_mismatch",
-            "name": "Preview sourceCommit mismatch absent",
-            "valueType": "BOOLEAN",
-            "expectedValue": false,
-            "observedValue": null,
-            "sourceSpans": [
-              {
-                "sourceId": "input",
-                "startOffset": 2014,
-                "endOffset": 2064,
-                "excerpt": "b.sourceCommit!==process.env.MINSK_EXPECTED_COMMIT",
-                "verified": true
-              }
-            ],
-            "freshnessRequirement": null,
-            "observedAt": null
-          },
-          {
-            "id": "c_api_origin_mismatch",
-            "name": "Preview apiOrigin mismatch absent",
-            "valueType": "BOOLEAN",
-            "expectedValue": false,
-            "observedValue": null,
-            "sourceSpans": [
-              {
-                "sourceId": "input",
-                "startOffset": 2066,
-                "endOffset": 2105,
-                "excerpt": "b.apiOrigin!==process.env.MINSK_API_URL",
-                "verified": true
-              }
-            ],
-            "freshnessRequirement": null,
-            "observedAt": null
-          },
-          {
-            "id": "c_branch_workbench",
-            "name": "Head ref is feat/approved-workbench-integration",
-            "valueType": "BOOLEAN",
-            "expectedValue": true,
-            "observedValue": null,
-            "sourceSpans": [
-              {
-                "sourceId": "input",
-                "startOffset": 754,
-                "endOffset": 810,
-                "excerpt": "github.head_ref == 'feat/approved-workbench-integration'",
-                "verified": true
-              }
-            ],
-            "freshnessRequirement": null,
-            "observedAt": null
-          },
-          {
-            "id": "c_branch_guidance",
-            "name": "Head ref is fix/scenario-guidance",
-            "valueType": "BOOLEAN",
-            "expectedValue": true,
-            "observedValue": null,
-            "sourceSpans": [
-              {
-                "sourceId": "input",
-                "startOffset": 814,
-                "endOffset": 856,
-                "excerpt": "github.head_ref == 'fix/scenario-guidance'",
-                "verified": true
-              }
-            ],
-            "freshnessRequirement": null,
-            "observedAt": null
-          },
-          {
-            "id": "c_branch_audit",
-            "name": "Head ref is fix/audit-correctness",
-            "valueType": "BOOLEAN",
-            "expectedValue": true,
-            "observedValue": null,
-            "sourceSpans": [
-              {
-                "sourceId": "input",
-                "startOffset": 860,
-                "endOffset": 902,
-                "excerpt": "github.head_ref == 'fix/audit-correctness'",
-                "verified": true
-              }
-            ],
-            "freshnessRequirement": null,
-            "observedAt": null
-          },
-          {
-            "id": "c_check_preview_commit",
-            "name": "Preview commit check enabled",
-            "valueType": "BOOLEAN",
-            "expectedValue": true,
-            "observedValue": null,
-            "sourceSpans": [
-              {
-                "sourceId": "input",
-                "startOffset": 1237,
-                "endOffset": 1263,
-                "excerpt": "MINSK_CHECK_PREVIEW_COMMIT",
-                "verified": true
-              }
-            ],
-            "freshnessRequirement": null,
-            "observedAt": null
-          }
-        ],
-        "policyRules": [
-          {
-            "id": "p_api_isolation",
-            "description": "Review API isolation requires all providers disabled and no key",
-            "subjectStepId": "s_verify_preview",
-            "predicate": "ALL",
-            "requiredConditionIds": [
-              "c_live_model",
-              "c_open_weight",
-              "c_public_challenger",
-              "c_key_present"
-            ],
-            "sourceSpans": [
-              {
-                "sourceId": "input",
-                "startOffset": 1626,
-                "endOffset": 1689,
-                "excerpt": "Review API must have all providers disabled and no provider key",
-                "verified": true
-              }
-            ],
-            "origin": "EXPLICIT"
-          },
-          {
-            "id": "p_preview_identity",
-            "description": "Preview must match tested source and isolated API",
-            "subjectStepId": "s_verify_preview",
-            "predicate": "ALL",
-            "requiredConditionIds": [
-              "c_source_commit_mismatch",
-              "c_api_origin_mismatch"
-            ],
-            "sourceSpans": [
-              {
-                "sourceId": "input",
-                "startOffset": 2123,
-                "endOffset": 2180,
-                "excerpt": "Preview does not match the tested source and isolated API",
-                "verified": true
-              }
-            ],
-            "origin": "EXPLICIT"
-          }
-        ],
-        "steps": [
-          {
-            "id": "s_install",
-            "name": "pnpm install",
-            "actionType": "CHECK",
-            "dependsOn": [],
-            "executionGateIds": [],
-            "sourceSpans": [
-              {
-                "sourceId": "input",
-                "startOffset": 313,
-                "endOffset": 343,
-                "excerpt": "pnpm install --frozen-lockfile",
-                "verified": true
-              }
-            ]
-          },
-          {
-            "id": "s_build",
-            "name": "pnpm build",
-            "actionType": "CHECK",
-            "dependsOn": [
-              "s_install"
-            ],
-            "executionGateIds": [],
-            "sourceSpans": [
-              {
-                "sourceId": "input",
-                "startOffset": 558,
-                "endOffset": 568,
-                "excerpt": "pnpm build",
-                "verified": true
-              }
-            ]
-          },
-          {
-            "id": "s_e2e",
-            "name": "pnpm e2e",
-            "actionType": "CHECK",
-            "dependsOn": [
-              "s_build"
-            ],
-            "executionGateIds": [],
-            "sourceSpans": [
-              {
-                "sourceId": "input",
-                "startOffset": 669,
-                "endOffset": 694,
-                "excerpt": "pnpm e2e --max-failures=1",
-                "verified": true
-              }
-            ]
-          },
-          {
-            "id": "s_verify_preview",
-            "name": "Verify isolated deployed preview",
-            "actionType": "CHECK",
-            "dependsOn": [
-              "s_e2e"
-            ],
-            "executionGateIds": [
-              "c_branch_workbench",
-              "c_branch_guidance",
-              "c_branch_audit"
-            ],
-            "sourceSpans": [
-              {
-                "sourceId": "input",
-                "startOffset": 709,
-                "endOffset": 741,
-                "excerpt": "Verify isolated deployed preview",
-                "verified": true
-              }
-            ]
-          },
-          {
-            "id": "s_e2e_public",
-            "name": "e2e against isolated preview",
-            "actionType": "CHECK",
-            "dependsOn": [
-              "s_verify_preview"
-            ],
-            "executionGateIds": [
-              "c_branch_workbench",
-              "c_branch_guidance",
-              "c_branch_audit"
-            ],
-            "sourceSpans": [
-              {
-                "sourceId": "input",
-                "startOffset": 2273,
-                "endOffset": 2327,
-                "excerpt": "pnpm e2e --max-failures=1 --output=test-results-public",
-                "verified": true
-              }
-            ]
-          }
-        ]
-      }
-    }
+  "modelOutput": {
+    "rawStructuredExtractionFile": "model-evaluation/real-world-reference/raw-meta-extraction.json",
+    "sha256": "13dfcdb9c68e3de9947d841c3b67f15cf6b488ded319bfe67ea442a82e8ded0d",
+    "validation": "VALID",
+    "deterministicOutcome": "INDETERMINATE"
   },
-  "evaluation": {
-    "status": 200,
-    "correlationId": "222633e5-37b0-41e8-87ce-cf1bdab97bd7",
-    "result": {
-      "kind": "BASELINE",
-      "result": {
-        "id": "44562ffabfc0553a67626ce823141dba65493ef2543a9b85bfded1d30b4c0ebc",
-        "scenarioId": "extracted",
-        "baselineHash": "8cfb5cd573e318b090737af031cff7b73c3295c480aee6459b2ca7898d94fbf3",
-        "interventionHash": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
-        "evaluatorVersion": "1.0.0",
-        "stepResults": [
-          {
-            "stepId": "s_install",
-            "eligibility": "SATISFIED",
-            "executes": true
-          },
-          {
-            "stepId": "s_build",
-            "eligibility": "SATISFIED",
-            "executes": true
-          },
-          {
-            "stepId": "s_e2e",
-            "eligibility": "SATISFIED",
-            "executes": true
-          },
-          {
-            "stepId": "s_verify_preview",
-            "eligibility": "UNKNOWN",
-            "executes": false
-          },
-          {
-            "stepId": "s_e2e_public",
-            "eligibility": "UNKNOWN",
-            "executes": false
-          }
-        ],
-        "policyResults": [
-          {
-            "ruleId": "p_api_isolation",
-            "state": "UNKNOWN"
-          },
-          {
-            "ruleId": "p_preview_identity",
-            "state": "UNKNOWN"
-          }
-        ],
-        "executionTrace": [
-          {
-            "sequence": 0,
-            "stepId": "s_install",
-            "status": "EXECUTED",
-            "reason": "Execution gates and dependencies satisfied"
-          },
-          {
-            "sequence": 1,
-            "stepId": "s_build",
-            "status": "EXECUTED",
-            "reason": "Execution gates and dependencies satisfied"
-          },
-          {
-            "sequence": 2,
-            "stepId": "s_e2e",
-            "status": "EXECUTED",
-            "reason": "Execution gates and dependencies satisfied"
-          },
-          {
-            "sequence": 3,
-            "stepId": "s_verify_preview",
-            "status": "UNKNOWN",
-            "reason": "Execution gate unknown"
-          },
-          {
-            "sequence": 4,
-            "stepId": "s_e2e_public",
-            "status": "UNKNOWN",
-            "reason": "Execution gate unknown"
-          }
-        ],
-        "affectedNodeIds": [],
-        "firstViolation": null,
-        "unknownConditions": [
-          "c_live_model",
-          "c_open_weight",
-          "c_public_challenger",
-          "c_key_present",
-          "c_source_commit_mismatch",
-          "c_api_origin_mismatch",
-          "c_branch_workbench",
-          "c_branch_guidance",
-          "c_branch_audit",
-          "c_check_preview_commit"
-        ],
-        "outcome": "INDETERMINATE",
-        "timestamp": "2026-11-02T21:00:24.552Z"
-      }
-    }
-  },
-  "review": {
-    "reviewedAt": "2026-11-02",
-    "reviewer": "Release engineering review",
-    "classification": "Source-linked real configuration evidence, excluded from the synthetic benchmark and accuracy metrics",
-    "findings": [
-      "The extraction validated successfully and the deterministic evaluator returned INDETERMINATE, matching the independently reasoned case label.",
-      "Muse Spark concentrated on the isolated preview verification step instead of representing every CI job step.",
-      "The workflow trigger uses an OR condition across three head refs. The extracted executionGateIds list places all three branch conditions on each preview step, so operator correction is required before using those gates as declared semantics.",
-      "Runtime provider-status checks remain unknown from static YAML, and the null observations correctly prevent a definitive execution claim."
+  "corrections": {
+    "confirmedAt": "2026-11-03",
+    "confirmedBy": "Repository owner",
+    "confirmationBasis": "Phase 1 established approved-workbench as a historical deterministic-review resource and the owner directed completion of Phase 2.",
+    "interpretation": [
+      "The three head-ref comparisons form one OR branch selector, not three simultaneous execution gates.",
+      "The isolated-preview step is historical reference evidence and is not current production deployment policy.",
+      "Corrected observed values are explicit deterministic scenario assumptions, not claims inferred from static YAML."
     ],
-    "acceptedWithoutCorrection": false,
-    "requiredCorrections": [
-      "Represent the three allowed head refs as one OR predicate or equivalent branch selector rather than simultaneous execution gates.",
-      "Confirm whether the release workflow should retain the historical preview-isolation step before treating it as current deployment policy."
-    ],
-    "accuracyClaim": false
+    "correctedWorkflowFile": "model-evaluation/real-world-reference/corrected-workflow.json",
+    "workflowSha256": "95f377ec4729ac7d5a3ed5eb20376c8109fa0fbb037823118064fa39c084502d"
+  },
+  "simulation": {
+    "kind": "BASELINE",
+    "result": {
+      "id": "64a05ac8ec5be7333ef4ed2497ab1c14c46f51320ead111d376e09140661d0f2",
+      "scenarioId": "real-ci-review-isolation-corrected",
+      "baselineHash": "a7208f840d17eecaf1a11f7ab108309bf912ff3aae73c3d72167b23d6d97e8d9",
+      "interventionHash": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "evaluatorVersion": "1.0.0",
+      "stepResults": [
+        {
+          "stepId": "s_install",
+          "eligibility": "SATISFIED",
+          "executes": true
+        },
+        {
+          "stepId": "s_build",
+          "eligibility": "SATISFIED",
+          "executes": true
+        },
+        {
+          "stepId": "s_e2e",
+          "eligibility": "SATISFIED",
+          "executes": true
+        },
+        {
+          "stepId": "s_verify_preview",
+          "eligibility": "SATISFIED",
+          "executes": true
+        },
+        {
+          "stepId": "s_e2e_public",
+          "eligibility": "SATISFIED",
+          "executes": true
+        }
+      ],
+      "policyResults": [
+        {
+          "ruleId": "p_api_isolation",
+          "state": "SATISFIED"
+        },
+        {
+          "ruleId": "p_preview_identity",
+          "state": "SATISFIED"
+        }
+      ],
+      "executionTrace": [
+        {
+          "sequence": 0,
+          "stepId": "s_install",
+          "status": "EXECUTED",
+          "reason": "Execution gates and dependencies satisfied"
+        },
+        {
+          "sequence": 1,
+          "stepId": "s_build",
+          "status": "EXECUTED",
+          "reason": "Execution gates and dependencies satisfied"
+        },
+        {
+          "sequence": 2,
+          "stepId": "s_e2e",
+          "status": "EXECUTED",
+          "reason": "Execution gates and dependencies satisfied"
+        },
+        {
+          "sequence": 3,
+          "stepId": "s_verify_preview",
+          "status": "EXECUTED",
+          "reason": "Execution gates and dependencies satisfied"
+        },
+        {
+          "sequence": 4,
+          "stepId": "s_e2e_public",
+          "status": "EXECUTED",
+          "reason": "Execution gates and dependencies satisfied"
+        }
+      ],
+      "affectedNodeIds": [],
+      "firstViolation": null,
+      "unknownConditions": [],
+      "outcome": "SAFE_BLOCK",
+      "timestamp": "2026-11-03T08:00:00.000Z"
+    }
+  },
+  "counterfactual": {
+    "exactIntervention": {
+      "id": "cf-enable-live-model-on-review-api",
+      "targetConditionId": "c_live_model",
+      "originalValue": false,
+      "replacementValue": true,
+      "reason": "Test whether the historical review step would still execute if live inference were enabled",
+      "proposedBy": "USER",
+      "validated": true
+    },
+    "result": {
+      "id": "a1521b6533946f51cb3e8f055b59f8001c771eafe882f97ef04ba8ffd0ff7b95",
+      "scenarioId": "real-ci-review-isolation-corrected",
+      "baselineHash": "a7208f840d17eecaf1a11f7ab108309bf912ff3aae73c3d72167b23d6d97e8d9",
+      "interventionHash": "e74bef1a94b4215b5ef3a575dc0f8e2ca7e673eeb9d98430814aa8bb3419269d",
+      "evaluatorVersion": "1.0.0",
+      "stepResults": [
+        {
+          "stepId": "s_install",
+          "eligibility": "SATISFIED",
+          "executes": true
+        },
+        {
+          "stepId": "s_build",
+          "eligibility": "SATISFIED",
+          "executes": true
+        },
+        {
+          "stepId": "s_e2e",
+          "eligibility": "SATISFIED",
+          "executes": true
+        },
+        {
+          "stepId": "s_verify_preview",
+          "eligibility": "SATISFIED",
+          "executes": true
+        },
+        {
+          "stepId": "s_e2e_public",
+          "eligibility": "SATISFIED",
+          "executes": true
+        }
+      ],
+      "policyResults": [
+        {
+          "ruleId": "p_api_isolation",
+          "state": "VIOLATED"
+        },
+        {
+          "ruleId": "p_preview_identity",
+          "state": "SATISFIED"
+        }
+      ],
+      "executionTrace": [
+        {
+          "sequence": 0,
+          "stepId": "s_install",
+          "status": "EXECUTED",
+          "reason": "Execution gates and dependencies satisfied"
+        },
+        {
+          "sequence": 1,
+          "stepId": "s_build",
+          "status": "EXECUTED",
+          "reason": "Execution gates and dependencies satisfied"
+        },
+        {
+          "sequence": 2,
+          "stepId": "s_e2e",
+          "status": "EXECUTED",
+          "reason": "Execution gates and dependencies satisfied"
+        },
+        {
+          "sequence": 3,
+          "stepId": "s_verify_preview",
+          "status": "EXECUTED",
+          "reason": "Execution gates and dependencies satisfied"
+        },
+        {
+          "sequence": 4,
+          "stepId": "s_e2e_public",
+          "status": "EXECUTED",
+          "reason": "Execution gates and dependencies satisfied"
+        }
+      ],
+      "affectedNodeIds": [
+        "c_live_model",
+        "s_verify_preview",
+        "s_e2e_public"
+      ],
+      "firstViolation": "p_api_isolation",
+      "unknownConditions": [],
+      "outcome": "UNSAFE_EXECUTION",
+      "timestamp": "2026-11-03T08:00:00.000Z"
+    }
+  },
+  "safeguard": {
+    "exactChange": {
+      "operation": "ADD_EXECUTION_GATE",
+      "stepId": "s_verify_preview",
+      "conditionId": "c_live_model"
+    },
+    "verificationStatus": "VERIFIED_SAFE_BLOCK",
+    "resolved": true,
+    "result": {
+      "id": "54423c789621f9e2d86f85bc95cf797ec20ba7db214d96935b237d07d76cbeee",
+      "scenarioId": "real-ci-review-isolation-corrected",
+      "baselineHash": "58a5de1b1a22ed78c6fb7aa8c9c6be2cbbe54dfd198594604f34dc8df5003a05",
+      "interventionHash": "e74bef1a94b4215b5ef3a575dc0f8e2ca7e673eeb9d98430814aa8bb3419269d",
+      "evaluatorVersion": "1.0.0",
+      "stepResults": [
+        {
+          "stepId": "s_install",
+          "eligibility": "SATISFIED",
+          "executes": true
+        },
+        {
+          "stepId": "s_build",
+          "eligibility": "SATISFIED",
+          "executes": true
+        },
+        {
+          "stepId": "s_e2e",
+          "eligibility": "SATISFIED",
+          "executes": true
+        },
+        {
+          "stepId": "s_verify_preview",
+          "eligibility": "VIOLATED",
+          "executes": false
+        },
+        {
+          "stepId": "s_e2e_public",
+          "eligibility": "VIOLATED",
+          "executes": false
+        }
+      ],
+      "policyResults": [
+        {
+          "ruleId": "p_api_isolation",
+          "state": "VIOLATED"
+        },
+        {
+          "ruleId": "p_preview_identity",
+          "state": "SATISFIED"
+        }
+      ],
+      "executionTrace": [
+        {
+          "sequence": 0,
+          "stepId": "s_install",
+          "status": "EXECUTED",
+          "reason": "Execution gates and dependencies satisfied"
+        },
+        {
+          "sequence": 1,
+          "stepId": "s_build",
+          "status": "EXECUTED",
+          "reason": "Execution gates and dependencies satisfied"
+        },
+        {
+          "sequence": 2,
+          "stepId": "s_e2e",
+          "status": "EXECUTED",
+          "reason": "Execution gates and dependencies satisfied"
+        },
+        {
+          "sequence": 3,
+          "stepId": "s_verify_preview",
+          "status": "BLOCKED",
+          "reason": "Execution gate violated"
+        },
+        {
+          "sequence": 4,
+          "stepId": "s_e2e_public",
+          "status": "BLOCKED",
+          "reason": "Dependency violated"
+        }
+      ],
+      "affectedNodeIds": [
+        "c_live_model",
+        "s_verify_preview",
+        "s_e2e_public"
+      ],
+      "firstViolation": null,
+      "unknownConditions": [],
+      "outcome": "SAFE_BLOCK",
+      "timestamp": "2026-11-03T08:00:00.000Z"
+    }
+  },
+  "certificate": {
+    "file": "model-evaluation/real-world-reference/certificate.json",
+    "sha256": "ebdad8d831c788788feeb227ae2414bf7f0ddea2cc814704bc70d7c20221996f",
+    "sourceHash": "ee23335cf7fc0698b3fec309fe778817f917ed86dd33265891821a9ee405c5ef",
+    "workflowHash": "a7208f840d17eecaf1a11f7ab108309bf912ff3aae73c3d72167b23d6d97e8d9",
+    "outcome": "UNSAFE_EXECUTION",
+    "verified": true,
+    "inputVerified": true,
+    "integrityHash": "7920d2c862a6d1ea423f63ea18dfaa88047c199c58cdbf5e09d492c6eea75bc7"
   }
+}

@@ -73,7 +73,9 @@ describe('deterministic HTTP flow',()=>{
   it('serves the sample and evaluates a counterfactual without model transport',async()=>{
     const sample=await api.fetch(new Request('http://localhost/api/v1/samples'),env);
     expect(sample.status).toBe(200);
-    expect((await sample.json() as {samples:Array<{id:string}>}).samples[0]?.id).toBe('missing-approval');
+    const samples=(await sample.json() as {samples:Array<{id:string;title:string}>}).samples;
+    expect(samples[0]?.id).toBe('missing-approval');
+    expect(samples).toContainEqual(expect.objectContaining({id:'real-ci-review-isolation-corrected',title:'Historical CI review isolation verification'}));
     const baseline=await post('/api/v1/experiments/run',{workflow:missingApproval});
     expect(baseline.status).toBe(200);
     expect(await baseline.json()).toMatchObject({kind:'BASELINE',result:{outcome:'SAFE_EXECUTION'}});
