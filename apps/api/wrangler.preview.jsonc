@@ -2,7 +2,7 @@
   "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "minsk-api-preview",
   "main": "src/index.ts",
-  "compatibility_date": "2026-11-03",
+  "compatibility_date": "2026-10-30",
   "compatibility_flags": ["nodejs_compat"],
   "upload_source_maps": true,
   "vars": {
