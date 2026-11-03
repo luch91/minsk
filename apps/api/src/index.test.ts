@@ -161,7 +161,9 @@ describe('deterministic HTTP flow',()=>{
     const extraction=await post('/api/v1/workflows/extract',{text:'Production deployment requires tests, approval, and migration compatibility.'});
     expect(extraction.status).toBe(503);
     const budget=await api.fetch(new Request('http://localhost/api/v1/budget'),env);
-    expect(await budget.json()).toMatchObject({liveModelEnabled:false});
+    const payload=await budget.json();
+    expect(payload).toMatchObject({liveModelEnabled:false});
+    expect(payload).not.toHaveProperty('providerBillingReconciled');
   });
   it('keeps the open-weight challenger disabled without separate credentials and switch',async()=>{
     const response=await post('/api/v1/challengers/open-weight',{workflow:missingApproval});
@@ -177,7 +179,9 @@ describe('deterministic HTTP flow',()=>{
     try{
       const response=await api.fetch(new Request('http://localhost/api/v1/challengers/open-weight',{method:'POST',headers:{'Content-Type':'application/json','X-Minsk-Test-Token':'private-test-token'},body:JSON.stringify({workflow:missingApproval})}),configured);
       expect(response.status).toBe(200);
-      expect(await response.json()).toMatchObject({challenger:{modelId:'meta-models/muse-spark-open-1026',responseId:'baseten-mocked'},experiments:[{result:{outcome:'UNSAFE_EXECUTION'}}]});
+      const payload=await response.json();
+      expect(payload).toMatchObject({challenger:{modelId:'meta-models/muse-spark-open-1026',responseId:'baseten-mocked'},experiments:[{result:{outcome:'UNSAFE_EXECUTION'}}]});
+      expect(payload).not.toHaveProperty('challenger.telemetry.providerChargeUsd');
     }finally{globalThis.fetch=original;}
   });
 });

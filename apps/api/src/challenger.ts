@@ -10,7 +10,7 @@ const candidateSchema=z.object({conditionId:z.string(),replacementValue:z.boolea
 const responseSchema=z.object({candidates:z.array(candidateSchema).max(3)});
 export type Candidate=z.infer<typeof candidateSchema>;
 export type CandidateConstraints={maxCandidates:number};
-export type ChallengerResult={candidates:Candidate[];provider:'Baseten';modelId:typeof BASETEN_MODEL;responseId:string|null;usage:{inputTokens:number;outputTokens:number}|null;accountingStatus:'PROVIDER_USAGE'|'UNKNOWN_USAGE';telemetry:{latencyMs:number;reservedMicroUsd:number;estimatedActualMicroUsd:number|null;providerChargeUsd:null}};
+export type ChallengerResult={candidates:Candidate[];provider:'Baseten';modelId:typeof BASETEN_MODEL;responseId:string|null;usage:{inputTokens:number;outputTokens:number}|null;accountingStatus:'PROVIDER_USAGE'|'UNKNOWN_USAGE';telemetry:{latencyMs:number;reservedMicroUsd:number;estimatedActualMicroUsd:number|null}};
 export interface AdversarialModelProvider {
   generateCandidates(workflow:Workflow,constraints:CandidateConstraints,signal:AbortSignal):Promise<ChallengerResult>;
   validateAvailability():boolean;
@@ -59,7 +59,7 @@ export class EligibleOpenWeightInvestigator implements AdversarialModelProvider 
       const reported=result.usage?.prompt_tokens!==undefined&&result.usage.completion_tokens!==undefined;
       const latencyMs=Math.round(performance.now()-start);if(reported)await this.ledger.settle(id,basetenActualMicroUsd(result.usage!.prompt_tokens!,result.usage!.completion_tokens!),result.usage!.prompt_tokens,result.usage!.completion_tokens,latencyMs);else await this.ledger.markUnknown(id,latencyMs);
       const valid=validatedCandidates(result.choices?.[0]?.message?.content,new Map(candidates.map(candidate=>[candidate.id,candidate.observedValue as boolean])),Math.min(3,constraints.maxCandidates));
-      return {candidates:valid,provider:'Baseten',modelId:BASETEN_MODEL,responseId:result.id??null,usage:reported?{inputTokens:result.usage!.prompt_tokens!,outputTokens:result.usage!.completion_tokens!}:null,accountingStatus:reported?'PROVIDER_USAGE':'UNKNOWN_USAGE',telemetry:{latencyMs,reservedMicroUsd,estimatedActualMicroUsd:reported?basetenActualMicroUsd(result.usage!.prompt_tokens!,result.usage!.completion_tokens!):null,providerChargeUsd:null}};
+      return {candidates:valid,provider:'Baseten',modelId:BASETEN_MODEL,responseId:result.id??null,usage:reported?{inputTokens:result.usage!.prompt_tokens!,outputTokens:result.usage!.completion_tokens!}:null,accountingStatus:reported?'PROVIDER_USAGE':'UNKNOWN_USAGE',telemetry:{latencyMs,reservedMicroUsd,estimatedActualMicroUsd:reported?basetenActualMicroUsd(result.usage!.prompt_tokens!,result.usage!.completion_tokens!):null}};
     }catch(error){const latencyMs=Math.round(performance.now()-start);const code=signal.aborted?'CANCELLED':timeout.aborted?'TIMEOUT':error instanceof ChallengerError?`HTTP_${error.status}`:'TRANSPORT';await this.ledger.markUnknown(id,latencyMs,code);if(signal.aborted)throw new ChallengerError(499,'Request cancelled');if(timeout.aborted)throw new ChallengerError(504,'Baseten provider timed out');throw error;}
   }
 }
