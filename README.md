@@ -29,7 +29,7 @@ pnpm benchmark
 pnpm dev
 ```
 
-The offline benchmark uses 12 versioned cases and an independent reference oracle. It makes no provider calls. The [preview](https://minsk-web-preview.pages.dev) exposes a budgeted live test environment only when its server-side switches and provider secrets are configured. Its status is visible at `/api/v1/budget`; a disabled or exhausted provider is reported to the caller rather than simulated.
+The offline benchmark uses 12 versioned cases and an independent reference oracle. It makes no provider calls. The canonical [judge application](https://minsk-web-preview.pages.dev) opens directly on the prepared Missing Approval workflow. `Use deterministic demonstration` remains available without provider access. The three optional live actions are separately labelled and enabled only when server-side switches, credentials, and allowances permit dispatch. Their status is visible through `/api/v1/budget`; a disabled, exhausted, or unavailable provider is reported rather than simulated.
 
 For the Missing Approval fixture, the baseline is `SAFE_EXECUTION`. Changing approval to false yields `UNSAFE_EXECUTION` because deployment lacks that gate. Adding the gate yields `SAFE_BLOCK` while the policy condition remains violated.
 
@@ -79,9 +79,9 @@ Routes include `/healthz`, `/api/v1/samples`, `/api/v1/workflows/validate`, `/ap
 
 Run `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`, `pnpm check:content`, `pnpm check:secrets`, `pnpm audit` and `pnpm e2e`. For an API that returns HTML instead of JSON, check `VITE_API_URL`, the Worker health endpoint and its allowed origin. A disabled provider requires the switches, credentials and budget configuration described above.
 
-Further reading: [release reference](docs/release-reference.md), [architecture](docs/architecture.md), [benchmark](docs/benchmark.md), [model integration](docs/model-integration.md), [model evaluation](docs/model-evaluation.md), [provenance](docs/provenance.md), [security](docs/security.md), and [deployment](docs/deployment.md). See [CONTRIBUTING.md](CONTRIBUTING.md) and the [MIT license](LICENSE).
+Further reading: [release reference](docs/release-reference.md), [release certification checklist](docs/release-candidate-checklist.md), [architecture](docs/architecture.md), [benchmark](docs/benchmark.md), [model integration](docs/model-integration.md), [model evaluation](docs/model-evaluation.md), [provenance](docs/provenance.md), [security](docs/security.md), and [deployment](docs/deployment.md). See [CONTRIBUTING.md](CONTRIBUTING.md) and the [MIT license](LICENSE).
 
-The approved interface integration and verification boundaries are documented in [Approved workbench integration](docs/approved-workbench-integration.md).
+The historical approved-interface integration and verification boundaries are documented in [Historical approved workbench integration](docs/approved-workbench-integration.md).
 
 Historical release evidence: [2 November hardening and complete provider journey](docs/release-hardening-2026-11-02.md). The historical [deterministic workbench preview](https://approved-workbench.minsk-web-preview.pages.dev/) does not dispatch live inference and is not the current judge URL.
 

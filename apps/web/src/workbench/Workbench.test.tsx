@@ -7,7 +7,7 @@ import type {InvestigationState} from '../useInvestigation';
 
 vi.mock('./icons',()=>({Icon:()=>null}));
 
-describe('approved workbench rendering',()=>{
+describe('Minsk workbench rendering',()=>{
   it('renders imported JSX with a single available workflow',()=>{
     const state={workflow:missingApproval,sceneWorkflow:missingApproval,samples:[missingApproval,realWorldCiReference],source:missingApproval.sourceDocuments[0]?.text??'',baseline:null,failure:null,verification:null,applied:null,trace:[],scenario:'BASELINE',result:null,busy:'',error:'',liveEnabled:false,challengerEnabled:false,providerStatus:{meta:'disabled',baseten:'disabled',error:'',remaining:{meta:0,baseten:0,global:0,client:0}},certificate:null,setError:()=>{},setSource:()=>{},setScenario:()=>{}} as unknown as InvestigationState;
     const html=renderToStaticMarkup(<Workbench state={state}/>);

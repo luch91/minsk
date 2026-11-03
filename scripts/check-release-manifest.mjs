@@ -4,12 +4,19 @@ import {manifest,renderReleaseReference} from './release-manifest.mjs';
 const fail=message=>{throw new Error(`Release manifest check failed: ${message}`);};
 const requiredDeployments=['production','releaseCandidate','historicalDeterministicReview'];
 if(manifest.schemaVersion!==1||manifest.product?.name!=='Minsk')fail('unexpected schema or product name');
+if(manifest.product.repository!=='luch91/minsk')fail('repository identity drift');
 for(const key of requiredDeployments)if(!manifest.deployments?.[key])fail(`missing deployment ${key}`);
 if(manifest.deployments.production.status!=='current'||manifest.deployments.historicalDeterministicReview.status!=='historical')fail('deployment status is ambiguous');
 if(!manifest.deployments.production.liveProviders||manifest.deployments.historicalDeterministicReview.liveProviders)fail('provider modes are incorrect');
+if(manifest.product.judgeUrl!==manifest.deployments.production.frontendUrl)fail('canonical judge URL does not match production');
+
+const requiredActions={liveExtraction:'Try live extraction',modelInvestigation:'Run model-assisted investigation',basetenChallenger:'Run Baseten challenger',deterministicDemonstration:'Use deterministic demonstration'};
+for(const [key,label] of Object.entries(requiredActions))if(manifest.judgeActions?.[key]!==label)fail(`judge action ${key} drift`);
+for(const state of ['live','deterministic','disabled','capacity_exhausted','unavailable','fallback'])if(!manifest.executionStates?.[state])fail(`missing execution state ${state}`);
 
 const systems=new Map(manifest.systems.map(item=>[item.id,item]));
 for(const id of ['workflow-extraction','investigation-assistance','complex-investigation','challenger-analysis','policy-evaluation','safeguard-verification','certificate'])if(!systems.has(id))fail(`missing system ${id}`);
+for(const system of systems.values())for(const field of ['capability','system','provider','modelIdentifier','purpose','authority','configurationSource','fallbackBehavior'])if(!system[field])fail(`${system.id} missing ${field}`);
 if(systems.get('workflow-extraction').modelIdentifier!=='muse-spark-1.3')fail('Spark identifier drift');
 if(systems.get('complex-investigation').modelIdentifier!=='muse-wonder-1.0')fail('Wonder identifier drift');
 if(systems.get('challenger-analysis').modelIdentifier!=='meta-models/muse-spark-open-1026')fail('Baseten identifier drift');
@@ -29,6 +36,7 @@ for(const key of ['production','releaseCandidate']){
 const workbench=readFileSync(new URL('../apps/web/src/workbench/Workbench.jsx',import.meta.url),'utf8');
 if(!workbench.includes("release-manifest.json"))fail('workbench does not consume the manifest');
 for(const identifier of manifest.systems.map(item=>item.modelIdentifier))if(workbench.includes(`<td>${identifier}</td>`))fail(`hard-coded UI identifier ${identifier}`);
+for(const label of Object.values(requiredActions))if(workbench.includes(`>${label}<`))fail(`hard-coded judge action label ${label}`);
 
 const generated=readFileSync(new URL('../docs/release-reference.md',import.meta.url),'utf8');
 if(generated!==renderReleaseReference(manifest))fail('docs/release-reference.md is stale; run pnpm release:sync');

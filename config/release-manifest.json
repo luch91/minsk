@@ -2,7 +2,14 @@
   "schemaVersion": 1,
   "product": {
     "name": "Minsk",
-    "repository": "luch91/minsk"
+    "repository": "luch91/minsk",
+    "judgeUrl": "https://minsk-web-preview.pages.dev"
+  },
+  "judgeActions": {
+    "liveExtraction": "Try live extraction",
+    "modelInvestigation": "Run model-assisted investigation",
+    "basetenChallenger": "Run Baseten challenger",
+    "deterministicDemonstration": "Use deterministic demonstration"
   },
   "deployments": {
     "production": {
@@ -43,6 +50,8 @@
     "live": "A provider request was admitted and dispatched by the API.",
     "deterministic": "The Minsk simulator evaluated declared workflow semantics without a provider request.",
     "disabled": "A server-side provider switch or required configuration prevents dispatch.",
+    "capacity_exhausted": "A server-side allowance or application cap prevents dispatch; no provider request is made.",
+    "unavailable": "Provider availability could not be verified; no live action is represented as successful.",
     "fallback": "A failed Wonder request was replaced by one admitted Spark provider request and is reported as a fallback."
   },
   "vocabulary": {

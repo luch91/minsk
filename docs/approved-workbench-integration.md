@@ -1,4 +1,4 @@
-# Approved workbench integration
+# Historical approved workbench integration
 
 > Historical pre-production integration record. It does not define the current judge deployment or release status. See the [authoritative release reference](release-reference.md).
 
