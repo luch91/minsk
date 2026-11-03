@@ -29,7 +29,7 @@ pnpm benchmark
 pnpm dev
 ```
 
-The offline benchmark uses 12 versioned cases and an independent reference oracle. It makes no provider calls. The canonical [judge application](https://minsk-web-preview.pages.dev) opens directly on the prepared Missing Approval workflow. `Use deterministic demonstration` remains available without provider access. The three optional live actions are separately labelled and enabled only when server-side switches, credentials, and allowances permit dispatch. Their status is visible through `/api/v1/budget`; a disabled, exhausted, or unavailable provider is reported rather than simulated.
+The offline benchmark uses 12 versioned cases and an independent reference oracle. It makes no provider calls. The canonical [judge application](https://minsk.pages.dev) opens directly on the prepared Missing Approval workflow. `Use deterministic demonstration` remains available without provider access. The three optional live actions are separately labelled and enabled only when server-side switches, credentials, and allowances permit dispatch. Their status is visible through `/api/v1/budget`; a disabled, exhausted, or unavailable provider is reported rather than simulated.
 
 For the Missing Approval fixture, the baseline is `SAFE_EXECUTION`. Changing approval to false yields `UNSAFE_EXECUTION` because deployment lacks that gate. Adding the gate yields `SAFE_BLOCK` while the policy condition remains violated.
 
