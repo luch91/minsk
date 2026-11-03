@@ -1,6 +1,6 @@
 import {describe,it,expect,vi,afterEach} from 'vitest';
 import api from './index';
-import type {InvestigationAttestation} from './budget';
+import type {Admission,InvestigationAttestation} from './budget';
 import type {Workflow,Intervention} from '@minsk/contracts';
 import {missingApproval} from '../../../fixtures/workflows/missing-approval';
 
@@ -8,12 +8,12 @@ const text='Production deployment requires passing automated tests, human approv
 const extracted={title:'Release fixture',conditions:[{id:'tests',name:'Automated tests',expectedValue:true,observedValue:true,evidence:'Automated tests passed.',freshnessRequirement:null,observedAt:null},{id:'approval',name:'Human approval',expectedValue:true,observedValue:true,evidence:'Human approval is present.',freshnessRequirement:null,observedAt:null},{id:'migration',name:'Migration compatibility',expectedValue:true,observedValue:true,evidence:'Migration compatibility verified.',freshnessRequirement:null,observedAt:null}],policyRules:[{id:'policy',description:'Deployment requires all three conditions',subjectStepId:'deploy',predicate:'ALL',requiredConditionIds:['tests','approval','migration'],evidence:text.split('. ')[0]+'.'}],steps:[{id:'deploy',name:'Deploy',actionType:'DEPLOY',dependsOn:[],executionGateIds:['tests','migration'],evidence:'The deployment agent executes when tests pass and migration compatibility passes.'}]};
 function setup(){
  const records=new Map<string,InvestigationAttestation>();
- const ledger={admit:vi.fn(async()=>({allowed:true})),reserve:vi.fn(async()=>({allowed:true})),settle:vi.fn(async()=>{}),markUnknown:vi.fn(async()=>{}),acquireInvestigation:vi.fn(async()=>true),releaseInvestigation:vi.fn(async()=>{}),attest:vi.fn(async(id:string,r:InvestigationAttestation)=>{records.set(id,r);}),getAttestation:async(id:string)=>records.get(id)??null};
- const env={BUDGET:{getByName:()=>ledger},MODEL_CALLS_ENABLED:'true',META_CREDITS_CONFIRMED:'true',META_BILLING_MODE:'Standard',MODEL_API_KEY:'fixture-meta-secret',BASETEN_CHALLENGER_ENABLED:'true',BASETEN_CREDITS_CONFIRMED:'true',PUBLIC_CHALLENGER_ENABLED:'true',BASETEN_API_KEY:'fixture-baseten-secret'} as unknown as Parameters<typeof api.fetch>[1];
+ const ledger={admit:vi.fn(async():Promise<Admission>=>({allowed:true})),reserve:vi.fn(async():Promise<Admission>=>({allowed:true})),settle:vi.fn(async()=>{}),markUnknown:vi.fn(async()=>{}),acquireInvestigation:vi.fn(async()=>true),releaseInvestigation:vi.fn(async()=>{}),attest:vi.fn(async(id:string,r:InvestigationAttestation)=>{records.set(id,r);}),getAttestation:async(id:string)=>records.get(id)??null};
+ const env={BUDGET:{getByName:()=>ledger},MODEL_CALLS_ENABLED:'true',MODEL_API_KEY:'fixture-meta-secret',BASETEN_CHALLENGER_ENABLED:'true',PUBLIC_CHALLENGER_ENABLED:'true',BASETEN_API_KEY:'fixture-baseten-secret'} as unknown as Parameters<typeof api.fetch>[1];
  const post=(path:string,body:unknown)=>api.fetch(new Request('https://fixture.test/api/v1/'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),env);
  return {ledger,post,env};
 }
-afterEach(()=>vi.unstubAllGlobals());
+afterEach(()=>{vi.unstubAllGlobals();vi.restoreAllMocks();});
 describe('release provider journey with deterministic provider fixtures',()=>{
  it('extracts, investigates through both tools, compares Baseten and exports trusted Meta provenance',async()=>{
   const {post,ledger}=setup();const requests:Array<Record<string,unknown>>=[];
@@ -41,11 +41,11 @@ describe('release provider journey with deterministic provider fixtures',()=>{
  });
  it.each([{conditionId:'human-approval',replacementValue:true},'{broken'])('rejects an invalid provider proposal and releases the lease: %j',async(args)=>{
   const {post,ledger}=setup();vi.stubGlobal('fetch',vi.fn(async()=>Response.json({id:'fixture-invalid',output:[{type:'function_call',name:'run_counterfactual',call_id:'fixture-call',arguments:typeof args==='string'?args:JSON.stringify(args)}],usage:{input_tokens:100,output_tokens:10}})));
-  const response=await post('investigations',{workflow:missingApproval});expect(response.status).toBe(502);expect(ledger.releaseInvestigation).toHaveBeenCalledTimes(1);expect(ledger.attest).not.toHaveBeenCalled();
+  const response=await post('investigations',{workflow:missingApproval});expect(response.status).toBe(502);expect(await response.json()).toMatchObject({liveResult:false,deterministicFallbackAvailable:true});expect(ledger.releaseInvestigation).toHaveBeenCalledTimes(1);expect(ledger.attest).not.toHaveBeenCalled();
  });
  it('reports provider throttling without leaking provider response contents',async()=>{
   const {post,ledger}=setup();vi.stubGlobal('fetch',vi.fn(async()=>new Response('fixture-meta-secret',{status:429})));
-  const response=await post('workflows/extract',{text});expect(response.status).toBe(429);expect(await response.text()).not.toContain('fixture-meta-secret');expect(ledger.markUnknown).toHaveBeenCalledWith(expect.any(String),expect.any(Number),'HTTP_429');
+  const response=await post('workflows/extract',{text});expect(response.status).toBe(429);const body=await response.text();expect(body).not.toContain('fixture-meta-secret');expect(JSON.parse(body)).toMatchObject({liveResult:false,deterministicFallbackAvailable:true});expect(ledger.markUnknown).toHaveBeenCalledWith(expect.any(String),expect.any(Number),'HTTP_429');
  });
  it('falls back once from unavailable Wonder and preserves routing provenance',async()=>{
   const {post,env,ledger}=setup();env.WONDER_ENABLED='true';
@@ -64,6 +64,18 @@ describe('release provider journey with deterministic provider fixtures',()=>{
   const {post,ledger}=setup();let calls=0;
   vi.stubGlobal('fetch',vi.fn(async()=>{calls++;if(calls===2)return new Response('Fixture: provider quota',{status:429});return Response.json({id:'fixture-first-only',output:[{type:'function_call',name:'run_counterfactual',call_id:'fixture-first-tool',arguments:JSON.stringify({conditionId:'human-approval',replacementValue:false})}],usage:{input_tokens:100,output_tokens:20}});}));
   const response=await post('investigations',{workflow:missingApproval});expect(response.status).toBe(429);expect(calls).toBe(2);expect(ledger.attest).not.toHaveBeenCalled();expect(ledger.releaseInvestigation).toHaveBeenCalledTimes(1);expect(ledger.settle).toHaveBeenCalledTimes(1);expect(ledger.markUnknown).toHaveBeenCalledTimes(1);
+ });
+ it('returns an honest timeout without fabricating a deterministic live result',async()=>{
+  const {post,ledger}=setup();vi.spyOn(AbortSignal,'timeout').mockReturnValue(AbortSignal.abort());vi.stubGlobal('fetch',vi.fn(async(_url:string,init:RequestInit)=>{if((init.signal as AbortSignal).aborted)throw new DOMException('aborted','AbortError');return new Response();}));
+  const response=await post('workflows/extract',{text});expect(response.status).toBe(504);expect(await response.json()).toMatchObject({error:'Meta provider timed out',liveResult:false,deterministicFallbackAvailable:true});expect(ledger.markUnknown).toHaveBeenCalledWith(expect.any(String),expect.any(Number),'TIMEOUT');
+ });
+ it('blocks an exhausted server allowance before provider transport',async()=>{
+  const {post,ledger}=setup();ledger.reserve.mockResolvedValueOnce({allowed:false,code:'MODEL_GLOBAL_LIMIT',reason:'Live model capacity is exhausted for today'});const transport=vi.fn();vi.stubGlobal('fetch',transport);
+  const response=await post('workflows/extract',{text});expect(response.status).toBe(429);expect(await response.json()).toMatchObject({code:'MODEL_GLOBAL_LIMIT',error:'Live model capacity is exhausted for today',liveResult:false});expect(transport).not.toHaveBeenCalled();
+ });
+ it('logs structured provider attempt fields without credentials',async()=>{
+  const {post}=setup();const output=vi.spyOn(console,'log').mockImplementation(()=>{});vi.stubGlobal('fetch',vi.fn(async()=>Response.json({id:'fixture-log',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify(extracted)}]}],usage:{input_tokens:100,output_tokens:50}})));
+  const response=await post('workflows/extract',{text});expect(response.status).toBe(200);const correlationId=response.headers.get('X-Correlation-ID');const entries=output.mock.calls.map(([entry])=>JSON.parse(String(entry)) as Record<string,unknown>);expect(entries).toContainEqual(expect.objectContaining({event:'provider_attempt',correlationId,provider:'Meta',modelId:'muse-spark-1.3',requestPurpose:'WORKFLOW_EXTRACTION',inputTokens:100,outputTokens:50,fallbackStatus:'NONE',result:'SUCCEEDED',latencyMs:expect.any(Number)}));expect(JSON.stringify(entries)).not.toContain('fixture-meta-secret');
  });
  it('caps actual streamed UTF-8 bytes before decoding or model dispatch',async()=>{
   const {post}=setup();const transport=vi.fn();vi.stubGlobal('fetch',transport);

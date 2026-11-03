@@ -4,7 +4,8 @@ import type { EvaluationResult, Intervention, Workflow } from '@minsk/contracts'
 export type ModelRecord = { id: string | null; modelId: string; provider: string; role: string; usage: unknown; accountingStatus: string };
 export type Investigation = { investigationId?: string; baseline: EvaluationResult; intervention: Intervention; failure: EvaluationResult; verification: { repaired: EvaluationResult; safeguard: { stepId: string; conditionId: string }; resolved: boolean } | null; trace: Array<{ id: string; tool: string; status: string; arguments: unknown; result: unknown; modelId?: string; responseId?: string | null }>; routing?: {modelId:string;reason:string;escalated:boolean}; model: ModelRecord };
 export type Scenario = 'BASELINE' | 'COUNTERFACTUAL' | 'SAFEGUARD';
-export type ProviderStatus = 'loading' | 'available' | 'disabled' | 'unavailable';
+export type ProviderStatus = 'loading' | 'available' | 'capacity_exhausted' | 'disabled' | 'unavailable';
+type ProviderAvailability={meta:ProviderStatus;baseten:ProviderStatus;error:string;remaining:{meta:number|null;baseten:number|null;global:number|null;client:number|null}};
 const API = import.meta.env.VITE_API_URL || '';
 const sessionKey='minsk-public-session';
 let ephemeralSession:string|undefined;
@@ -45,7 +46,7 @@ export function useInvestigation() {
   const [benchmark, setBenchmark] = useState<unknown>(null);
   const [challenger,setChallenger]=useState<unknown>(null);
   const [challengerEnabled,setChallengerEnabled]=useState(false);
-  const [providerStatus,setProviderStatus]=useState<{meta:ProviderStatus;baseten:ProviderStatus;error:string}>({meta:'loading',baseten:'loading',error:''});
+  const [providerStatus,setProviderStatus]=useState<ProviderAvailability>({meta:'loading',baseten:'loading',error:'',remaining:{meta:null,baseten:null,global:null,client:null}});
   const controller = useRef<AbortController | null>(null);
   const revision = useRef(0);
 
@@ -66,16 +67,16 @@ export function useInvestigation() {
   }, []);
 
   async function refreshBudget(signal?:AbortSignal) {
-    setProviderStatus({meta:'loading',baseten:'loading',error:''});
+    setProviderStatus(previous=>({...previous,meta:'loading',baseten:'loading',error:''}));
     try {
-      const x=await call<{liveModelEnabled:boolean;publicChallengerEnabled:boolean}>('/api/v1/budget',undefined,signal);
+      const x=await call<{liveModelEnabled:boolean;publicChallengerEnabled:boolean;providers:{meta:{state:ProviderStatus;remainingDispatches:number};baseten:{state:ProviderStatus;remainingDispatches:number}};availability:{modelCalls:{globalRemaining:number;clientRemaining:number}}}>('/api/v1/budget',undefined,signal);
       if(signal?.aborted)return;
       setLiveEnabled(x.liveModelEnabled);setChallengerEnabled(x.publicChallengerEnabled);
-      setProviderStatus({meta:x.liveModelEnabled?'available':'disabled',baseten:x.publicChallengerEnabled?'available':'disabled',error:''});
+      setProviderStatus({meta:x.providers.meta.state,baseten:x.providers.baseten.state,error:'',remaining:{meta:x.providers.meta.remainingDispatches,baseten:x.providers.baseten.remainingDispatches,global:x.availability.modelCalls.globalRemaining,client:x.availability.modelCalls.clientRemaining}});
     } catch(e) {
       if(signal?.aborted)return;
       setLiveEnabled(false);setChallengerEnabled(false);
-      setProviderStatus({meta:'unavailable',baseten:'unavailable',error:e instanceof Error?e.message:'Provider status request failed'});
+      setProviderStatus({meta:'unavailable',baseten:'unavailable',error:e instanceof Error?e.message:'Provider status request failed',remaining:{meta:null,baseten:null,global:null,client:null}});
     }
   }
 

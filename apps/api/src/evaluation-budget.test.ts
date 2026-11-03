@@ -1,5 +1,5 @@
 import {describe,expect,it} from 'vitest';
-import {evaluationAdmission,providerCeiling,publicQuotaLimits,quotaAdmission} from './budget';
+import {basetenDailyLimit,evaluationAdmission,providerCeiling,publicQuotaLimits,quotaAdmission} from './budget';
 
 describe('provider spending configuration',()=>{
   it('defaults Meta to fifty dollars and Baseten to ten dollars',()=>{
@@ -15,16 +15,20 @@ describe('provider spending configuration',()=>{
   });
 });
 
+describe('Baseten server dispatch cap',()=>{
+  it('uses a hard bounded daily limit',()=>{expect(basetenDailyLimit({})).toBe(50);expect(basetenDailyLimit({BASETEN_MAX_CALLS_PER_DAY:'75'})).toBe(75);expect(basetenDailyLimit({BASETEN_MAX_CALLS_PER_DAY:'0'})).toBe(50);expect(basetenDailyLimit({BASETEN_MAX_CALLS_PER_DAY:'10001'})).toBe(50);});
+});
+
 describe('public quota configuration',()=>{
   it('uses safe defaults and enforces bounded explicit public quotas',()=>{
-    expect(publicQuotaLimits({})).toEqual({globalRequestsPerMinute:300,clientRequestsPerMinute:30,globalModelCallsPerDay:30,clientModelCallsPerDay:5});
+    expect(publicQuotaLimits({})).toEqual({globalRequestsPerMinute:300,clientRequestsPerMinute:30,globalModelCallsPerDay:500,clientModelCallsPerDay:20});
     expect(publicQuotaLimits({PUBLIC_GLOBAL_REQUESTS_PER_MINUTE:'20',PUBLIC_CLIENT_REQUESTS_PER_MINUTE:'3',PUBLIC_GLOBAL_MODEL_CALLS_PER_DAY:'11',PUBLIC_CLIENT_MODEL_CALLS_PER_DAY:'2'})).toEqual({globalRequestsPerMinute:20,clientRequestsPerMinute:3,globalModelCallsPerDay:11,clientModelCallsPerDay:2});
-    expect(publicQuotaLimits({PUBLIC_GLOBAL_REQUESTS_PER_MINUTE:'0',PUBLIC_CLIENT_MODEL_CALLS_PER_DAY:'1001'})).toMatchObject({globalRequestsPerMinute:300,clientModelCallsPerDay:5});
+    expect(publicQuotaLimits({PUBLIC_GLOBAL_REQUESTS_PER_MINUTE:'0',PUBLIC_CLIENT_MODEL_CALLS_PER_DAY:'1001'})).toMatchObject({globalRequestsPerMinute:300,clientModelCallsPerDay:20});
   });
   it('rejects quota exhaustion across concurrent users without conflating their session counts',()=>{
-    expect(quotaAdmission(2,1,3,2,'limited')).toEqual({allowed:true});
-    expect(quotaAdmission(3,0,3,2,'limited')).toEqual({allowed:false,reason:'limited'});
-    expect(quotaAdmission(2,2,3,2,'limited')).toEqual({allowed:false,reason:'limited'});
+    expect(quotaAdmission(2,1,3,2,'request')).toEqual({allowed:true});
+    expect(quotaAdmission(3,0,3,2,'request')).toMatchObject({allowed:false,code:'REQUEST_GLOBAL_LIMIT'});
+    expect(quotaAdmission(2,2,3,2,'model')).toMatchObject({allowed:false,code:'MODEL_CLIENT_LIMIT'});
   });
 });
 

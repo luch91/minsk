@@ -13,7 +13,7 @@ The existing deterministic visual-review Worker and its existing BudgetLedger na
 
 ## Isolation
 
-The review Worker has MODEL_CALLS_ENABLED, WONDER_ENABLED, BASETEN_CHALLENGER_ENABLED and PUBLIC_CHALLENGER_ENABLED set to false. It has no provider key binding. Its public budget response reports all model/challenger availability disabled and zero provider accounting. The allowed review origins are explicit; no wildcard was added. Existing quotas and deterministic evaluation are preserved.
+The review Worker has MODEL_CALLS_ENABLED, WONDER_ENABLED, BASETEN_CHALLENGER_ENABLED and PUBLIC_CHALLENGER_ENABLED set to false. It has no provider key binding. Its public availability response reports all model/challenger access disabled without exposing account information. The allowed review origins are explicit; no wildcard was added. Existing quotas and deterministic evaluation are preserved.
 
 The API bundle comes from the tested integration source, not the old visual implementation. Worker deployment identifier: c344fa1a32eb4bad9caa3a6f8e657e50. Previous review version retained for rollback: 45fb9c6b-5c65-485e-ba7b-c4f070f50445.
 

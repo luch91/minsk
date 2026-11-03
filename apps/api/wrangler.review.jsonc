@@ -2,7 +2,9 @@
   "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "faultline-api-visual-preview",
   "main": "src/index.ts",
-  "compatibility_date": "2026-10-26",
+  "compatibility_date": "2026-11-03",
+  "compatibility_flags": ["nodejs_compat"],
+  "upload_source_maps": true,
   "vars": {
     "MODEL_CALLS_ENABLED": "false",
     "WONDER_ENABLED": "false",
@@ -10,7 +12,9 @@
     "PUBLIC_CHALLENGER_ENABLED": "false",
     "ALLOWED_ORIGIN": "https://feat-reference-visual-integr-k0mv.faultline-web-preview.pages.dev,https://approved-workbench.minsk-web-preview.pages.dev"
   },
+  "observability": {"enabled": true, "logs": {"head_sampling_rate": 1}, "traces": {"enabled": true, "head_sampling_rate": 0.05}},
   "durable_objects": {
     "bindings": [{ "name": "BUDGET", "class_name": "BudgetLedger" }]
-  }
+  },
+  "migrations": [{"tag": "v1", "new_sqlite_classes": ["BudgetLedger"]}]
 }

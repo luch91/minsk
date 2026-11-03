@@ -3,7 +3,7 @@ import api from './index';
 import {missingApproval,missingApprovalIntervention} from '../../../fixtures/workflows/missing-approval';
 import {hash} from '@minsk/simulator';
 
-const ledger:{admit:()=>Promise<{allowed:boolean;reason?:string}>;getAttestation:()=>Promise<unknown>;status:()=>Promise<unknown>}={admit:async()=>({allowed:true}),getAttestation:async()=>null,status:async()=>({conservativeAccountedUsd:0})};
+const ledger:{admit:()=>Promise<{allowed:boolean;reason?:string;code?:string}>;getAttestation:()=>Promise<unknown>;availability:()=>Promise<unknown>}={admit:async()=>({allowed:true}),getAttestation:async()=>null,availability:async()=>({requests:{globalRemaining:299,clientRemaining:29,resetsAt:'2026-11-03T00:01:00.000Z'},modelCalls:{globalRemaining:500,clientRemaining:20,resetsAt:'2026-11-04T00:00:00.000Z'},providers:{meta:{capacityAvailable:true,remainingDispatches:20},baseten:{capacityAvailable:true,remainingDispatches:20}}})};
 const env={BUDGET:{getByName:()=>ledger}} as unknown as Parameters<typeof api.fetch>[1];
 async function post(path:string,body:unknown){return api.fetch(new Request(`http://localhost${path}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),env);}
 describe('deterministic HTTP flow',()=>{
@@ -13,7 +13,7 @@ describe('deterministic HTTP flow',()=>{
     const originalFetch=globalThis.fetch;
     globalThis.fetch=vi.fn(async()=>Response.json({id:'resp-test',output:[{content:[{type:'output_text',text:JSON.stringify(extracted)}]}],usage:{input_tokens:100,output_tokens:100}}));
     const modelLedger={...ledger,reserve:async()=>({allowed:true}),settle:async()=>{},markUnknown:async()=>{}};
-    const modelEnv={BUDGET:{getByName:()=>modelLedger},MODEL_CALLS_ENABLED:'true',META_CREDITS_CONFIRMED:'true',META_BILLING_MODE:'Standard',MODEL_API_KEY:'test-key'} as unknown as Parameters<typeof api.fetch>[1];
+    const modelEnv={BUDGET:{getByName:()=>modelLedger},MODEL_CALLS_ENABLED:'true',MODEL_API_KEY:'test-key'} as unknown as Parameters<typeof api.fetch>[1];
     try{
       const response=await api.fetch(new Request('http://localhost/api/v1/workflows/extract',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})}),modelEnv);
       expect(response.status).toBe(200);
@@ -29,7 +29,7 @@ describe('deterministic HTTP flow',()=>{
     const originalFetch=globalThis.fetch;
     globalThis.fetch=vi.fn(async()=>Response.json({id:'resp-any',output:[{content:[{type:'output_text',text:JSON.stringify(extracted)}]}],usage:{input_tokens:100,output_tokens:100}}));
     const modelLedger={...ledger,reserve:async()=>({allowed:true}),settle:async()=>{},markUnknown:async()=>{}};
-    const modelEnv={BUDGET:{getByName:()=>modelLedger},MODEL_CALLS_ENABLED:'true',META_CREDITS_CONFIRMED:'true',META_BILLING_MODE:'Standard',MODEL_API_KEY:'test-key'} as unknown as Parameters<typeof api.fetch>[1];
+    const modelEnv={BUDGET:{getByName:()=>modelLedger},MODEL_CALLS_ENABLED:'true',MODEL_API_KEY:'test-key'} as unknown as Parameters<typeof api.fetch>[1];
     try{
       const response=await api.fetch(new Request('http://localhost/api/v1/workflows/extract',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})}),modelEnv);
       expect(response.status).toBe(200);
@@ -45,7 +45,7 @@ describe('deterministic HTTP flow',()=>{
     const originalFetch=globalThis.fetch;
     globalThis.fetch=vi.fn(async()=>Response.json({id:'resp-temporal',output:[{content:[{type:'output_text',text:JSON.stringify(extracted)}]}],usage:{input_tokens:100,output_tokens:100}}));
     const modelLedger={...ledger,reserve:async()=>({allowed:true}),settle:async()=>{},markUnknown:async()=>{}};
-    const modelEnv={BUDGET:{getByName:()=>modelLedger},MODEL_CALLS_ENABLED:'true',META_CREDITS_CONFIRMED:'true',META_BILLING_MODE:'Standard',MODEL_API_KEY:'test-key'} as unknown as Parameters<typeof api.fetch>[1];
+    const modelEnv={BUDGET:{getByName:()=>modelLedger},MODEL_CALLS_ENABLED:'true',MODEL_API_KEY:'test-key'} as unknown as Parameters<typeof api.fetch>[1];
     try{const response=await api.fetch(new Request('http://localhost/api/v1/workflows/extract',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})}),modelEnv);const body=await response.json() as {workflow:typeof missingApproval};expect(body.workflow.conditions[0]).toMatchObject({freshnessRequirement:null,observedAt:null});}finally{globalThis.fetch=originalFetch;}
   });
   it('keeps controlled comparison routes inaccessible without the private evaluation token',async()=>{
@@ -63,7 +63,7 @@ describe('deterministic HTTP flow',()=>{
     const originalFetch=globalThis.fetch;
     globalThis.fetch=vi.fn(async()=>Response.json({id:'resp-wrong-target',output:[{type:'function_call',name:'run_counterfactual',call_id:'call-wrong',arguments:JSON.stringify({conditionId:'tests-pass',replacementValue:false})}],usage:{input_tokens:100,output_tokens:50}}));
     const modelLedger={...ledger,reserve:async()=>({allowed:true}),settle:async()=>{},markUnknown:async()=>{},acquireInvestigation:async()=>true,releaseInvestigation:async()=>{}};
-    const modelEnv={BUDGET:{getByName:()=>modelLedger},MODEL_CALLS_ENABLED:'true',META_CREDITS_CONFIRMED:'true',META_BILLING_MODE:'Standard',MODEL_API_KEY:'test-key'} as unknown as Parameters<typeof api.fetch>[1];
+    const modelEnv={BUDGET:{getByName:()=>modelLedger},MODEL_CALLS_ENABLED:'true',MODEL_API_KEY:'test-key'} as unknown as Parameters<typeof api.fetch>[1];
     try{
       const response=await api.fetch(new Request('http://localhost/api/v1/investigations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({workflow:missingApproval,targetConditionId:'human-approval'})}),modelEnv);
       expect(response.status).toBe(502);
@@ -166,6 +166,8 @@ describe('deterministic HTTP flow',()=>{
     const payload=await budget.json();
     expect(payload).toMatchObject({liveModelEnabled:false});
     expect(payload).not.toHaveProperty('providerBillingReconciled');
+    expect(JSON.stringify(payload)).not.toMatch(/balance|credit|usd|keyPresent|credential/i);
+    expect(payload).toMatchObject({availability:{requests:{globalRemaining:299,clientRemaining:29},modelCalls:{globalRemaining:500,clientRemaining:20}},providers:{meta:{state:'disabled',remainingDispatches:20},baseten:{state:'disabled',remainingDispatches:20}}});
   });
   it('keeps the open-weight challenger disabled without separate credentials and switch',async()=>{
     const response=await post('/api/v1/challengers/open-weight',{workflow:missingApproval});
@@ -175,7 +177,7 @@ describe('deterministic HTTP flow',()=>{
   });
   it('evaluates a validated Baseten candidate with the independent simulator',async()=>{
     const testLedger={admit:async()=>({allowed:true}),getAttestation:async()=>null,acquireInvestigation:async()=>true,releaseInvestigation:async()=>{},reserve:async()=>({allowed:true}),settle:async()=>{},markUnknown:async()=>{}};
-    const configured={...env,BASETEN_API_KEY:'test-key',BASETEN_CREDITS_CONFIRMED:'true',BASETEN_CHALLENGER_ENABLED:'true',BASETEN_TEST_TOKEN:'private-test-token',BUDGET:{getByName:()=>testLedger}} as unknown as Parameters<typeof api.fetch>[1];
+    const configured={...env,BASETEN_API_KEY:'test-key',BASETEN_CHALLENGER_ENABLED:'true',BASETEN_TEST_TOKEN:'private-test-token',BUDGET:{getByName:()=>testLedger}} as unknown as Parameters<typeof api.fetch>[1];
     const original=globalThis.fetch;
     globalThis.fetch=vi.fn(async()=>Response.json({id:'baseten-mocked',choices:[{message:{content:JSON.stringify({candidates:[{conditionId:'human-approval',replacementValue:false,reason:'Test missing approval'}]})}}],usage:{prompt_tokens:100,completion_tokens:50}}));
     try{
