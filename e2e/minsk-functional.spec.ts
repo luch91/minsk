@@ -54,11 +54,11 @@ test('workflow review, graph inspection, and disabled live controls',async({page
   await expect(observed).toHaveValue('false');
   const bounds=await observed.boundingBox();expect(bounds!.x+bounds!.width).toBeLessThanOrEqual(page.viewportSize()!.width);
   await navigate(page,'Investigations');
-  await expect(page.getByRole('button',{name:'Run Meta investigation'})).toBeDisabled();
+  await expect(page.getByRole('button',{name:'Run model-assisted investigation'})).toBeDisabled();
   await navigate(page,'Workflows');
   await expect(page.getByLabel('Observed Human approval present',{exact:true})).toHaveValue('false');
   await page.getByRole('button',{name:'New workflow extraction'}).click();
-  await expect(page.getByRole('button',{name:'Extract with Muse Spark'})).toBeDisabled();
+  await expect(page.getByRole('dialog').getByRole('button',{name:'Try live extraction'})).toBeDisabled();
   await page.getByRole('button',{name:'Close extraction',exact:true}).click();
 });
 
@@ -69,7 +69,7 @@ test('live extraction errors retain source without issuing an unmocked provider 
   await navigate(page,'Workflows');await page.getByRole('button',{name:'New workflow extraction'}).click();
   const source='Production deployment requires explicit human approval and passing tests. The deployment agent only checks tests.';
   await page.getByLabel('Workflow procedure').fill(source);
-  await page.getByRole('button',{name:'Extract with Muse Spark'}).click();
+  await page.getByRole('dialog').getByRole('button',{name:'Try live extraction'}).click();
   await expect(page.getByRole('dialog').getByRole('alert')).toContainText('request allowance reached');
   await expect(page.getByLabel('Workflow procedure')).toHaveValue(source);
 });
