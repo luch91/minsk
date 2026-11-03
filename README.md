@@ -16,7 +16,7 @@ Workflow text or structured input
   -> Trace and integrity-checked certificate
 ```
 
-Spark handles extraction and routine investigations. Wonder can be routed to complex investigations. A Baseten-hosted Meta Muse Spark Open challenger proposes additional interventions. Every model proposal is validated and simulator outcomes remain authoritative.
+Spark handles extraction and routine investigations. Wonder can be routed to complex investigations. A Baseten-hosted Meta Muse Spark Open challenger proposes additional interventions. Every model proposal is validated and simulator outcomes remain authoritative. Exact system identifiers, roles, fallbacks and deployment names are derived from the [release manifest](docs/release-reference.md).
 
 ## Quickstart
 
@@ -79,10 +79,10 @@ Routes include `/healthz`, `/api/v1/samples`, `/api/v1/workflows/validate`, `/ap
 
 Run `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`, `pnpm check:content`, `pnpm check:secrets`, `pnpm audit` and `pnpm e2e`. For an API that returns HTML instead of JSON, check `VITE_API_URL`, the Worker health endpoint and its allowed origin. A disabled provider requires the switches, credentials and budget configuration described above.
 
-Further reading: [architecture](docs/architecture.md), [benchmark](docs/benchmark.md), [model integration](docs/model-integration.md), [model evaluation](docs/model-evaluation.md), [provenance](docs/provenance.md), [security](docs/security.md), and [deployment](docs/deployment.md). See [CONTRIBUTING.md](CONTRIBUTING.md) and the [MIT license](LICENSE).
+Further reading: [release reference](docs/release-reference.md), [architecture](docs/architecture.md), [benchmark](docs/benchmark.md), [model integration](docs/model-integration.md), [model evaluation](docs/model-evaluation.md), [provenance](docs/provenance.md), [security](docs/security.md), and [deployment](docs/deployment.md). See [CONTRIBUTING.md](CONTRIBUTING.md) and the [MIT license](LICENSE).
 
 The approved interface integration and verification boundaries are documented in [Approved workbench integration](docs/approved-workbench-integration.md).
 
-Release evidence: [2 November hardening and complete provider journey](docs/release-hardening-2026-11-02.md). The approved [deterministic workbench preview](https://approved-workbench.minsk-web-preview.pages.dev/) preserves the owner-approved interface and does not dispatch live inference.
+Historical release evidence: [2 November hardening and complete provider journey](docs/release-hardening-2026-11-02.md). The historical [deterministic workbench preview](https://approved-workbench.minsk-web-preview.pages.dev/) does not dispatch live inference and is not the current judge URL.
 
 Audit corrections: [workflow integrity, graph completeness and operator guidance](docs/audit-corrections-2026-11-02.md).

@@ -1,5 +1,7 @@
 # Isolated deployed workbench verification
 
+> Historical evidence from the pre-production deterministic review gate. The names and URLs below are retained for provenance and are not current release endpoints. See the [authoritative release reference](release-reference.md).
+
 Frontend: https://approved-workbench.minsk-web-preview.pages.dev
 Pages project: minsk-web-preview
 Preview branch: approved-workbench (not the production branch).
