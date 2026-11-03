@@ -63,7 +63,7 @@ test('workflow review, graph inspection, and disabled live controls',async({page
 });
 
 test('live extraction errors retain source without issuing an unmocked provider request',async({page})=>{
-  await page.route('**/api/v1/budget',route=>route.fulfill({json:{liveModelEnabled:true,publicChallengerEnabled:false}}));
+  await page.route('**/api/v1/budget',route=>route.fulfill({json:{liveModelEnabled:true,publicChallengerEnabled:false,providers:{meta:{state:'available',remainingDispatches:20},baseten:{state:'disabled',remainingDispatches:20}},availability:{modelCalls:{globalRemaining:500,clientRemaining:20}}}}));
   await page.route('**/api/v1/workflows/extract',route=>route.fulfill({status:429,json:{error:'Test fixture: request allowance reached'}}));
   await page.goto('/');await expect(page.getByRole('heading',{name:'Home',exact:true})).toBeVisible();
   await navigate(page,'Workflows');await page.getByRole('button',{name:'New workflow extraction'}).click();
