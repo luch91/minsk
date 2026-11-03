@@ -2,13 +2,14 @@ import {describe,expect,it} from 'vitest';
 import {evaluationAdmission,providerCeiling,publicQuotaLimits,quotaAdmission} from './budget';
 
 describe('provider spending configuration',()=>{
-  it('defaults Meta to fifty dollars and leaves Baseten uncapped',()=>{
+  it('defaults Meta to fifty dollars and Baseten to ten dollars',()=>{
     expect(providerCeiling('Meta',{})).toBe(50_000_000);
-    expect(providerCeiling('Baseten',{})).toBe(Number.POSITIVE_INFINITY);
+    expect(providerCeiling('Baseten',{})).toBe(10_000_000);
   });
   it('accepts explicit limits and rejects malformed values',()=>{
     expect(providerCeiling('Meta',{META_CEILING_MICRO_USD:'7500000'})).toBe(7_500_000);
-    expect(providerCeiling('Baseten',{})).toBe(Number.POSITIVE_INFINITY);
+    expect(providerCeiling('Baseten',{BASETEN_CEILING_MICRO_USD:'25000000'})).toBe(25_000_000);
+    expect(providerCeiling('Baseten',{BASETEN_CEILING_MICRO_USD:'100000001'})).toBeNull();
     expect(providerCeiling('Meta',{META_CEILING_MICRO_USD:'Infinity'})).toBeNull();
     expect(providerCeiling('Meta',{META_CEILING_MICRO_USD:'50000001'})).toBeNull();
   });

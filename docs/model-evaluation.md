@@ -8,7 +8,7 @@ Each result file records the locked reference, API latency, per-provider telemet
 
 The historical controlled comparison remains immutable in `model-evaluation/`. It contains 48 model-case tasks on eight synthetic scenarios and is not real-world accuracy evidence. The recorded provider token estimate was $0.330163; final provider billing was not returned. See `report-2026-10-30.md`, `scored-2026-10-30.json`, and `ground-truth.json` for exact samples and limitations.
 
-The evaluation dispatch limit covers both providers. `MINSK_EVAL_MAX_MICRO_USD` is a Meta-only conservative estimate limit. Meta's application ceiling defaults to $50. Baseten has no application-dollar ceiling, but retains its authentication, input validation, request, dispatch, timeout and rate controls. Neither local estimate is a provider-side billing guarantee.
+The evaluation dispatch limit covers both providers. `MINSK_EVAL_MAX_MICRO_USD` is a Meta-only controlled-evaluation estimate limit. Meta's application ceiling defaults to $50 and Baseten's separate application ceiling defaults to $10. Both retain authentication, input validation, request, dispatch, timeout and rate controls. Neither local estimate is a provider-side billing guarantee.
 
 ## Scoring protocol v2
 
