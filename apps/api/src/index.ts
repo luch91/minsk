@@ -35,7 +35,7 @@ function clientKey(request:Request,env:Env):string {if(env.MINSK_EVAL_TOKEN&&req
 function modelReady(env:Env):boolean {return env.MODEL_CALLS_ENABLED==='true'&&env.META_CREDITS_CONFIRMED==='true'&&env.META_BILLING_MODE==='Standard'&&!!env.MODEL_API_KEY;}
 async function sample():Promise<Workflow> { const {missingApproval}=await import('../../../fixtures/workflows/missing-approval'); return missingApproval; }
 type ModelItem={type?:string;name?:string;call_id?:string;arguments?:string;content?:Array<{type?:string;text?:string}>;encrypted_content?:string;summary?:unknown[]};
-type ModelResponse={id?:string;output?:ModelItem[];usage?:{input_tokens?:number;output_tokens?:number};status?:string;modelId:ModelId;accountingStatus:'PROVIDER_USAGE'|'UNKNOWN_USAGE';telemetry:{latencyMs:number;reservedMicroUsd:number;estimatedActualMicroUsd:number|null;providerChargeUsd:null}};
+type ModelResponse={id?:string;output?:ModelItem[];usage?:{input_tokens?:number;output_tokens?:number};status?:string;modelId:ModelId;accountingStatus:'PROVIDER_USAGE'|'UNKNOWN_USAGE';telemetry:{latencyMs:number;reservedMicroUsd:number;estimatedActualMicroUsd:number|null}};
 async function meta(env:Env,modelId:ModelId,input:Record<string,unknown>,signal:AbortSignal,client='unknown'):Promise<ModelResponse>{
   if(!modelReady(env)) throw new HttpError(503,'Live Meta inference is unavailable');
   const config=modelConfig(modelId);
@@ -49,7 +49,7 @@ async function meta(env:Env,modelId:ModelId,input:Record<string,unknown>,signal:
     const result=await response.json() as Omit<ModelResponse,'modelId'|'accountingStatus'|'telemetry'>;
     const reported=result.usage?.input_tokens!==undefined&&result.usage.output_tokens!==undefined;
     const latencyMs=Math.round(performance.now()-start);if(reported)await ledger.settle(callId,actualMicroUsd(result.usage!.input_tokens!,result.usage!.output_tokens!,modelId),result.usage!.input_tokens,result.usage!.output_tokens,latencyMs);else await ledger.markUnknown(callId,latencyMs);
-    return {...result,modelId,accountingStatus:reported?'PROVIDER_USAGE':'UNKNOWN_USAGE',telemetry:{latencyMs,reservedMicroUsd,estimatedActualMicroUsd:reported?actualMicroUsd(result.usage!.input_tokens!,result.usage!.output_tokens!,modelId):null,providerChargeUsd:null}};
+    return {...result,modelId,accountingStatus:reported?'PROVIDER_USAGE':'UNKNOWN_USAGE',telemetry:{latencyMs,reservedMicroUsd,estimatedActualMicroUsd:reported?actualMicroUsd(result.usage!.input_tokens!,result.usage!.output_tokens!,modelId):null}};
   }catch(error){const latencyMs=Math.round(performance.now()-start);const code=signal.aborted?'CANCELLED':timeout.aborted?'TIMEOUT':error instanceof HttpError?`HTTP_${error.status}`:'TRANSPORT';await ledger.markUnknown(callId,latencyMs,code);if(signal.aborted)throw new HttpError(499,'Request cancelled');if(timeout.aborted)throw new HttpError(504,'Meta provider timed out');throw error;}
 }
 function modelOutput<T>(schema:z.ZodType<T>,text:string,kind:string):T{try{return schema.parse(JSON.parse(text));}catch{throw new HttpError(502,`Meta returned invalid ${kind}`);}}
