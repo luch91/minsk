@@ -54,10 +54,17 @@ export function useInvestigation() {
   useEffect(() => {
     const ac = new AbortController();
     const initialRevision=revision.current;
-    const loadSamples=call<{ samples: Workflow[] }>('/api/v1/samples', undefined, ac.signal).then(response => {
+    let acceptedRevision=initialRevision;
+    const loadSamples=call<{ samples: Workflow[] }>('/api/v1/samples', undefined, ac.signal).then(async response => {
       if (ac.signal.aborted) return;
       setSamples(response.samples.length?response.samples:[missingApproval]);
-    }).catch(e => { if (!ac.signal.aborted&&revision.current===initialRevision) setError(e instanceof Error?e.message:'Workflow library request failed'); });
+      const first=response.samples.find(sample=>sample.id==='missing-approval')??response.samples[0];
+      if(!first||revision.current!==initialRevision||JSON.stringify(first)===JSON.stringify(missingApproval))return;
+      acceptedRevision=++revision.current;
+      setWorkflow(first);setSelected(first.steps[0]?.id??first.conditions[0]?.id??null);setSource(first.sourceDocuments[0]?.text??'');setBaseline(null);
+      const evaluated=await call<{result:EvaluationResult}>('/api/v1/experiments/run',{workflow:first},ac.signal);
+      if(!ac.signal.aborted&&revision.current===acceptedRevision)setBaseline(evaluated.result);
+    }).catch(e => { if (!ac.signal.aborted&&revision.current===acceptedRevision) setError(e instanceof Error?e.message:'Workflow library request failed'); });
     const loadBaseline=call<{ result: EvaluationResult }>('/api/v1/experiments/run', { workflow: missingApproval }, ac.signal).then(evaluated => {
       if (!ac.signal.aborted&&revision.current===initialRevision) setBaseline(evaluated.result);
     }).catch(e => { if (!ac.signal.aborted&&revision.current===initialRevision) setError(e instanceof Error?e.message:'Initial evaluation failed'); });
