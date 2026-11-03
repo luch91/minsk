@@ -1,26 +1,111 @@
 # Minsk
 
 [![CI](https://github.com/luch91/minsk/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/luch91/minsk/actions/workflows/ci.yml)
-[![License](https://img.shields.io/github/license/luch91/minsk)](LICENSE)
+[![Live judge application](https://img.shields.io/badge/judge%20application-live-16a085)](https://minsk.pages.dev/)
+[![Node.js 22](https://img.shields.io/badge/Node.js-22-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![pnpm 10.18.3](https://img.shields.io/badge/pnpm-10.18.3-f69220?logo=pnpm&logoColor=white)](https://pnpm.io/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Minsk investigates discrepancies between a workflow's declared policies and the conditions its execution steps actually enforce. It tests hypothetical changes, explains the resulting execution path, and verifies candidate safeguards against a deterministic model of the workflow.
+**Minsk finds the gap between what an automated workflow says must happen and what its execution path actually enforces.**
 
-The simulator evaluates declared workflow semantics. It does not execute an external deployment or verify infrastructure settings that were not supplied as evidence.
+It turns workflow evidence into a reviewable model, evaluates the declared policy, tests a counterfactual, verifies a proposed safeguard, and produces an integrity-checked certificate. Models may help extract or challenge an interpretation; Minsk's deterministic simulator remains the authority for every execution outcome.
+
+> [Open the live judge application](https://minsk.pages.dev/). It starts directly on a prepared workflow. No account setup, Settings visit, BYOK configuration, or provider-routing knowledge is required.
+
+## Start here: a two-minute guided demonstration
+
+The prepared **Missing Approval** case describes a production deployment that requires passing tests, human approval, and migration compatibility. The execution step checks tests and migration compatibility, but it does not enforce approval as a gate.
+
+1. Open [Minsk](https://minsk.pages.dev/).
+2. Click **Use deterministic demonstration**. This never calls a model provider.
+3. Minsk changes the approval observation from present to absent.
+4. Inspect the `UNSAFE_EXECUTION` result: policy is violated, yet deployment remains eligible.
+5. Click **Verify safeguard** to add approval as an execution gate.
+6. Inspect the `SAFE_BLOCK` result, replay the trace, and export the certificate.
+
+The expected journey is deliberately reproducible:
+
+| Stage | What changes | Expected outcome | Meaning |
+| --- | --- | --- | --- |
+| Baseline | Approval is present | `SAFE_EXECUTION` | Policy is satisfied and deployment may execute. |
+| Counterfactual | Approval becomes absent | `UNSAFE_EXECUTION` | Policy is violated, but the missing gate still permits execution. |
+| Safeguard | Approval is added as a deployment gate | `SAFE_BLOCK` | The unsafe execution is blocked while the policy violation remains visible. |
+
+The simulator evaluates only the supplied workflow semantics. It does not execute a deployment or claim knowledge of infrastructure settings that were not provided as evidence.
+
+## What Minsk does
+
+Minsk keeps evidence, model assistance, policy evaluation, and execution claims separate:
 
 ```text
-Workflow text or structured input
-  -> Spark extraction and source validation
-  -> Policy requirements and execution gates
-  -> Deterministic baseline and counterfactual
-  -> Model-proposed safeguard and deterministic verification
-  -> Trace and integrity-checked certificate
+Source text or structured workflow
+  -> Reviewable extraction with exact source spans
+  -> Human confirmation or correction
+  -> Declared policy requirements and actual execution gates
+  -> Deterministic baseline and counterfactual evaluation
+  -> Safeguard verification
+  -> Replay trace and integrity-checked certificate
 ```
 
-Spark handles extraction and routine investigations. Wonder can be routed to complex investigations. A Baseten-hosted Meta Muse Spark Open challenger proposes additional interventions. Every model proposal is validated and simulator outcomes remain authoritative. Exact system identifiers, roles, fallbacks and deployment names are derived from the [release manifest](docs/release-reference.md).
+| Capability | System | Role | Authority |
+| --- | --- | --- | --- |
+| Workflow extraction | Meta Muse Spark | Converts source text into a reviewable workflow proposal | Non-authoritative until confirmed |
+| Investigation assistance | Meta model | Suggests questions, evidence links, and tool activity | Advisory |
+| Challenger analysis | Baseten-hosted Meta Muse Spark Open | Independently challenges assumptions and findings | Advisory |
+| Policy evaluation | Minsk simulator | Evaluates conditions, rules, gates, and dependencies | Authoritative |
+| Safeguard verification | Minsk simulator | Tests whether an intervention blocks unsafe execution | Authoritative |
+| Certificate | Minsk certificate service | Binds inputs, trace, and outcomes with integrity metadata | Authoritative record |
 
-## Quickstart
+Spark handles extraction and routine investigations. Wonder may be routed to complex investigations. Exact deployed identifiers, configuration sources, fallbacks, and environment names come from the [authoritative release reference](docs/release-reference.md).
 
-Use Node.js 22 and pnpm 10.18.3.
+## Choose a demonstration path
+
+### Deterministic path: always available
+
+Use **Use deterministic demonstration** in the application, or run the same journey locally:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm demo:journey
+```
+
+This path uses the versioned Missing Approval fixture and makes no provider request. It is the recommended first experience and the stable acceptance path when live capacity is unavailable.
+
+### Optional live actions
+
+The prepared workflow also exposes three plainly labelled actions:
+
+- **Try live extraction** asks Meta to turn source text into a proposal for review.
+- **Run model-assisted investigation** asks Meta for advisory investigation activity.
+- **Run Baseten challenger** requests an independent advisory challenge.
+
+Live actions appear only when the API reports server-side provider access and remaining allowance. The interface shows remaining request availability, not account balances, credentials, or internal spending limits. When capacity is disabled, exhausted, or unavailable, Minsk reports that state honestly. It never presents a deterministic result as a live result and never silently substitutes one after a provider failure.
+
+## Real-world reference case
+
+Alongside the predictable Missing Approval fixture, the workflow library includes **Historical CI review isolation verification**. It is derived from a frozen public CI policy and demonstrates how Minsk handles external material without making tests depend on a mutable web page.
+
+The repository preserves:
+
+- the canonical public URL, retrieval date, and exact source revision;
+- a verbatim source snapshot with offsets and a source hash;
+- the raw structured model extraction;
+- user-confirmed corrections;
+- the deterministic simulation and exact counterfactual;
+- the verified safeguard; and
+- certificate hashes binding the source, workflow, and result.
+
+See the [real-world case guide](docs/real-configuration-case.md) and the versioned artifacts in [`model-evaluation/real-world-reference`](model-evaluation/real-world-reference/).
+
+## Run Minsk locally
+
+### Requirements
+
+- Node.js 22
+- pnpm 10.18.3
+- Wrangler for the local Cloudflare Worker, installed with the workspace dependencies
+
+### Install and start
 
 ```sh
 pnpm install --frozen-lockfile
@@ -29,13 +114,27 @@ pnpm benchmark
 pnpm dev
 ```
 
-The offline benchmark uses 12 versioned cases and an independent reference oracle. It makes no provider calls. The canonical [judge application](https://minsk.pages.dev) opens directly on the prepared Missing Approval workflow. `Use deterministic demonstration` remains available without provider access. The three optional live actions are separately labelled and enabled only when server-side switches, credentials, and allowances permit dispatch. Their status is visible through `/api/v1/budget`; a disabled, exhausted, or unavailable provider is reported rather than simulated.
+The web application runs through Vite and proxies `/api` requests to the local Worker. Live providers are off by default, so the deterministic workflows, benchmark, replay, safeguards, and certificates remain usable without provider credentials.
 
-For the Missing Approval fixture, the baseline is `SAFE_EXECUTION`. Changing approval to false yields `UNSAFE_EXECUTION` because deployment lacks that gate. Adding the gate yields `SAFE_BLOCK` while the policy condition remains violated.
+## Repository map
 
-## Live model setup
+| Path | Purpose |
+| --- | --- |
+| [`apps/web`](apps/web/) | React investigation workbench and judge interface |
+| [`apps/api`](apps/api/) | Cloudflare Worker API, admission controls, provider routing, and certificate endpoints |
+| [`packages/contracts`](packages/contracts/) | Shared schemas and workflow contracts |
+| [`packages/simulator`](packages/simulator/) | Deterministic evaluator and safeguard verification |
+| [`fixtures/workflows`](fixtures/workflows/) | Versioned deterministic and real-world reference workflows |
+| [`evaluation`](evaluation/) | Locked synthetic and independently sourced evaluation cases |
+| [`model-evaluation`](model-evaluation/) | Model comparison runner, evidence, scoring, and reference artifacts |
+| [`docs`](docs/) | Architecture, provenance, deployment, security, and release evidence |
 
-Copy the names in [.env.example](.env.example) into the ignored `apps/api/.dev.vars` and provide your own credentials there. Never put provider keys in browser code or commit them. Start the Worker locally with Wrangler; see [model integration](docs/model-integration.md).
+## Provider configuration
+
+Provider credentials belong only on the API Worker. Copy the relevant names from [`.env.example`](.env.example) into the ignored `apps/api/.dev.vars`; never put keys in browser code or commit them. See [model integration](docs/model-integration.md) for the complete setup and routing contract.
+
+<details>
+<summary>Server-side provider switches and limits</summary>
 
 | Setting | Purpose | Safe default |
 | --- | --- | --- |
@@ -55,11 +154,15 @@ Copy the names in [.env.example](.env.example) into the ignored `apps/api/.dev.v
 | `PUBLIC_GLOBAL_MODEL_CALLS_PER_DAY`, `PUBLIC_CLIENT_MODEL_CALLS_PER_DAY` | Enforced public provider-dispatch quotas | 500, 20 |
 | `ALLOWED_ORIGIN` | Allowed browser origin | unset |
 
-Pre-dispatch reservations are recorded in a persistent Durable Object solely to enforce application caps. Public quotas are enforced globally and per browser session plus Cloudflare client IP. The public availability response exposes only remaining dispatch counts and provider state; it never exposes account balances, credentials, or internal cap amounts.
+</details>
 
-Extracted workflows retain explicit `ALL` or `ANY` policy rules, evidence excerpts, optional freshness requirements in seconds, and optional observation timestamps. The workbench permits operators to correct those values only when evidence remains an exact excerpt of the supplied source. Stale, absent, ambiguous, and contradictory observations evaluate as unknown rather than false.
+Pre-dispatch reservations are stored in a persistent Durable Object solely to enforce application caps. Public quotas are enforced globally and per browser session plus Cloudflare client IP. The public availability endpoint exposes only provider state and remaining dispatch counts.
+
+Extracted workflows retain explicit `ALL` or `ANY` rules, exact evidence excerpts, optional freshness requirements, and optional observation timestamps. Operators may correct an interpretation only while its evidence remains an exact excerpt of the supplied source. Stale, absent, ambiguous, and contradictory observations evaluate as unknown rather than false.
 
 ## Benchmarks and certificates
+
+The offline benchmark contains 12 versioned cases and an independent reference oracle. It makes no provider calls.
 
 ```sh
 pnpm benchmark
@@ -67,22 +170,57 @@ pnpm benchmark:models -- --provider meta
 pnpm verify:certificate path/to/certificate.json path/to/workflow.json
 ```
 
-`benchmark:models` performs fresh inference against the eight locked synthetic cases, using `meta`, `baseten`, or `all`. Set `MINSK_EVAL_API_URL` and `MINSK_EVAL_TOKEN`; Baseten also requires `MINSK_EVAL_TEST_TOKEN`. Use a local Worker with your own keys, or an authorized HTTPS Worker with operator-provided access tokens. Results are written to ignored `model-evaluation/results/`. A stopped run can be continued with `--resume <result-path>`. Errors are recorded; synthetic results are not real-world accuracy claims.
+`benchmark:models` performs fresh inference against eight locked synthetic cases with `meta`, `baseten`, or `all`. Set `MINSK_EVAL_API_URL` and `MINSK_EVAL_TOKEN`; Baseten also requires `MINSK_EVAL_TEST_TOKEN`. Results are written to ignored `model-evaluation/results/`, and an interrupted run can continue with `--resume <result-path>`. Errors remain errors; synthetic scores are not real-world accuracy claims.
 
-The independent verifier recomputes integrity and, when the original workflow is supplied, verifies the source, workflow and deterministic results. Integrity does not establish issuer authenticity.
+The independent verifier recomputes certificate integrity and, when given the original workflow, checks the source, workflow, and deterministic results. Integrity proves internal consistency, not issuer authenticity.
 
-`evaluation/real-configuration-cases.json` contains two read-only, independently sourced GitHub configuration evidence cases with locked `INDETERMINATE` ground truth. They test the boundary between observed workflow text and unobserved external enforcement. They are not included in synthetic accuracy metrics and do not establish real-world detection accuracy.
+`evaluation/real-configuration-cases.json` contains two read-only GitHub configuration cases with locked `INDETERMINATE` ground truth. They test the boundary between observed text and unobserved external enforcement; they are excluded from synthetic accuracy metrics.
 
-## API and development
+## API overview
 
-Routes include `/healthz`, `/api/v1/samples`, `/api/v1/workflows/validate`, `/api/v1/workflows/extract`, `/api/v1/experiments/run`, `/api/v1/investigations`, `/api/v1/safeguards/verify`, `/api/v1/challengers/open-weight`, `/api/v1/reports/export`, `/api/v1/reports/verify`, `/api/v1/benchmark` and `/api/v1/budget`.
+| Area | Routes |
+| --- | --- |
+| Health and availability | `/healthz`, `/api/v1/budget` |
+| Workflow input | `/api/v1/samples`, `/api/v1/workflows/validate`, `/api/v1/workflows/extract` |
+| Evaluation | `/api/v1/experiments/run`, `/api/v1/investigations`, `/api/v1/safeguards/verify` |
+| Challenger | `/api/v1/challengers/open-weight` |
+| Reports | `/api/v1/reports/export`, `/api/v1/reports/verify` |
+| Benchmark | `/api/v1/benchmark` |
 
-Run `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`, `pnpm check:content`, `pnpm check:secrets`, `pnpm audit` and `pnpm e2e`. For an API that returns HTML instead of JSON, check `VITE_API_URL`, the Worker health endpoint and its allowed origin. A disabled provider requires the switches, credentials and budget configuration described above.
+If the frontend receives HTML instead of JSON, verify `VITE_API_URL`, the Worker health endpoint, and `ALLOWED_ORIGIN`. A disabled provider requires the corresponding server-side switch, credential, and cap configuration.
 
-Further reading: [release reference](docs/release-reference.md), [release certification checklist](docs/release-candidate-checklist.md), [architecture](docs/architecture.md), [benchmark](docs/benchmark.md), [model integration](docs/model-integration.md), [model evaluation](docs/model-evaluation.md), [provenance](docs/provenance.md), [security](docs/security.md), and [deployment](docs/deployment.md). See [CONTRIBUTING.md](CONTRIBUTING.md) and the [MIT license](LICENSE).
+## Verify a change
 
-The historical approved-interface integration and verification boundaries are documented in [Historical approved workbench integration](docs/approved-workbench-integration.md).
+```sh
+pnpm check:content
+pnpm check:release
+pnpm real-world:check
+pnpm check:secrets
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm benchmark
+pnpm benchmark:checks
+pnpm build
+pnpm audit
+pnpm e2e
+```
 
-Historical release evidence: [2 November hardening and complete provider journey](docs/release-hardening-2026-11-02.md). The historical [deterministic workbench preview](https://approved-workbench.minsk-web-preview.pages.dev/) does not dispatch live inference and is not the current judge URL.
+CI runs the same release gates, including desktop and mobile browser journeys for exhausted quota, timeout, malformed output, provider failure, fallback behavior, and the deterministic acceptance path.
 
-Audit corrections: [workflow integrity, graph completeness and operator guidance](docs/audit-corrections-2026-11-02.md).
+## Documentation
+
+- [Architecture](docs/architecture.md)
+- [Release reference and exact model identifiers](docs/release-reference.md)
+- [Submission evidence and guided demonstration](docs/submission-evidence.md)
+- [Release certification checklist](docs/release-candidate-checklist.md)
+- [Model integration](docs/model-integration.md)
+- [Model evaluation](docs/model-evaluation.md)
+- [Benchmark methodology](docs/benchmark.md)
+- [Provenance](docs/provenance.md)
+- [Security](docs/security.md)
+- [Deployment and rollback](docs/deployment.md)
+- [Contributing](CONTRIBUTING.md)
+- [MIT license](LICENSE)
+
+Historical interface-integration, hardening, and audit records remain available in [`docs`](docs/) for provenance. The historical deterministic preview is not the current judge URL.
