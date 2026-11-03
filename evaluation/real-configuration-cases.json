@@ -4,9 +4,13 @@
   "cases": [
     {
       "id": "RC-01",
-      "source": "https://github.com/luch91/minsk/blob/main/.github/workflows/ci.yml",
-      "retrievedAt": "2026-10-30",
+      "source": "https://github.com/luch91/minsk/blob/0769cb10564c9c56f4e9467e98e4c6151e21426f/.github/workflows/ci.yml",
+      "retrievedAt": "2026-11-02",
       "kind": "GitHub Actions continuous integration workflow",
+      "revision": "0769cb10564c9c56f4e9467e98e4c6151e21426f",
+      "snapshot": "model-evaluation/real-world-reference/source-ci-0769cb1.yml",
+      "sha256": "2857fd50ea7b8b442277909d00789b4f2bc842c84a759c1acc83dc9afdc49afe",
+      "license": "MIT",
       "groundTruth": {
         "deploymentActionObserved": false,
         "humanApprovalObserved": false,

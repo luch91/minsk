@@ -6,7 +6,7 @@ test('provider-fixture extraction review, two-tool investigation, Baseten compar
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
  const samples=await (await page.request.get(api+'/api/v1/samples')).json();const workflow=structuredClone(samples.samples[0]);workflow.id='fixture-extraction-review';workflow.title='Provider fixture workflow';workflow.conditions[0].observedValue=null;
  let extractionCalls=0,investigationCalls=0,challengerCalls=0;
- await page.route('**/api/v1/budget',r=>r.fulfill({json:{liveModelEnabled:true,publicChallengerEnabled:true}}));
+ await page.route('**/api/v1/budget',r=>r.fulfill({json:{liveModelEnabled:true,publicChallengerEnabled:true,providers:{meta:{state:'available',remainingDispatches:20},baseten:{state:'available',remainingDispatches:20}},availability:{modelCalls:{globalRemaining:500,clientRemaining:20}}}}));
  await page.route('**/api/v1/workflows/extract',r=>{extractionCalls++;return r.fulfill({json:{workflow,model:{id:'fixture-extraction',modelId:'muse-spark-1.3',provider:'Meta Model API',role:'EXTRACTION',usage:null,accountingStatus:'UNKNOWN_USAGE'}}});});
  await page.route('**/api/v1/investigations',async r=>{
   investigationCalls++;const w=r.request().postDataJSON().workflow;const c=w.conditions.find((c:{id:string})=>c.id==='human-approval');const intervention={id:'fixture-model-change',targetConditionId:c.id,originalValue:c.observedValue,replacementValue:false,reason:'Provider fixture: missing approval gate',proposedBy:'META_HOSTED',validated:true};
@@ -17,11 +17,11 @@ test('provider-fixture extraction review, two-tool investigation, Baseten compar
  });
  await page.route('**/api/v1/challengers/open-weight',r=>{challengerCalls++;return r.fulfill({json:{challenger:{provider:'Baseten',modelId:'meta-models/muse-spark-open-1026',responseId:'fixture-baseten',candidates:[{conditionId:'human-approval',replacementValue:false,reason:'Provider fixture: missing gate'}]},comparison:null}});});
  await page.goto('/');await navigate(page,'Workflows');await page.getByRole('button',{name:'New workflow extraction'}).click();
- const dialog=page.getByRole('dialog',{name:'New workflow extraction'});await dialog.getByLabel('Workflow procedure').fill(workflow.sourceDocuments[0].text);await dialog.getByRole('button',{name:'Extract with Muse Spark'}).click();
+ const dialog=page.getByRole('dialog',{name:'New workflow extraction'});await dialog.getByLabel('Workflow procedure').fill(workflow.sourceDocuments[0].text);await dialog.getByRole('button',{name:'Try live extraction'}).click();
  await expect(dialog.getByRole('heading',{name:'Review the interpretation'})).toBeVisible();
  await dialog.getByLabel(`Observed ${workflow.conditions[0].name}`,{exact:true}).selectOption('true');
  await dialog.getByRole('button',{name:'Confirm interpretation',exact:true}).click();await expect(dialog.locator('.outcome-panel code')).toHaveText('SAFE_EXECUTION');await dialog.getByRole('button',{name:'Open investigation',exact:true}).click();
- await page.getByRole('button',{name:'Run Meta investigation',exact:true}).click();await expect(page.locator('.trace-row')).toHaveCount(2);await expect(page.locator('main .outcome-panel code')).toHaveText('UNSAFE_EXECUTION');
+ await page.getByRole('button',{name:'Run model-assisted investigation',exact:true}).click();await expect(page.locator('.trace-row')).toHaveCount(2);await expect(page.locator('main .outcome-panel code')).toHaveText('UNSAFE_EXECUTION');
  await page.getByRole('button',{name:'Baseten challenger',exact:true}).click();await page.getByRole('button',{name:'Run Baseten challenger',exact:true}).click();await expect(page.locator('pre')).toContainText('fixture-baseten');
  await navigate(page,'Counterfactuals');await page.getByRole('button',{name:'Verify safeguard',exact:true}).click();await expect(page.locator('main .outcome-panel code')).toHaveText('SAFE_BLOCK');
  await navigate(page,'Certificates');const download=page.waitForEvent('download');await page.getByRole('button',{name:'Export certificate',exact:true}).click();await download;await expect(page.getByRole('heading',{name:'Certificate integrity verified'})).toBeVisible();
@@ -37,8 +37,8 @@ test('blocked local storage still permits the complete deterministic journey',as
 });
 
 test('cancelling extraction preserves source and ignores a late fixture response',async({page})=>{
- await page.route('**/api/v1/budget',r=>r.fulfill({json:{liveModelEnabled:true,publicChallengerEnabled:false}}));
+ await page.route('**/api/v1/budget',r=>r.fulfill({json:{liveModelEnabled:true,publicChallengerEnabled:false,providers:{meta:{state:'available',remainingDispatches:20},baseten:{state:'disabled',remainingDispatches:20}},availability:{modelCalls:{globalRemaining:500,clientRemaining:20}}}}));
  let release!:()=>void;const pending=new Promise<void>(r=>{release=r;});
  await page.route('**/api/v1/workflows/extract',async r=>{await pending;await r.fulfill({json:{error:'Late cancelled fixture'}}).catch(()=>{});});
- await page.goto('/');await navigate(page,'Workflows');await page.getByRole('button',{name:'New workflow extraction'}).click();const dialog=page.getByRole('dialog',{name:'New workflow extraction'});const source='Fixture workflow: production deployment requires human approval and passing tests.';await dialog.getByLabel('Workflow procedure').fill(source);await dialog.getByRole('button',{name:'Extract with Muse Spark'}).click();await expect(dialog.getByRole('status')).toContainText('Extracting workflow');await dialog.getByRole('button',{name:'Cancel',exact:true}).click();release();await expect(dialog.getByRole('heading',{name:'Submit workflow text'})).toBeVisible();await expect(dialog.getByLabel('Workflow procedure')).toHaveValue(source);await expect(dialog.getByRole('status')).toHaveCount(0);
+ await page.goto('/');await navigate(page,'Workflows');await page.getByRole('button',{name:'New workflow extraction'}).click();const dialog=page.getByRole('dialog',{name:'New workflow extraction'});const source='Fixture workflow: production deployment requires human approval and passing tests.';await dialog.getByLabel('Workflow procedure').fill(source);await dialog.getByRole('button',{name:'Try live extraction'}).click();await expect(dialog.getByRole('status')).toContainText('Extracting workflow');await dialog.getByRole('button',{name:'Cancel',exact:true}).click();release();await expect(dialog.getByRole('heading',{name:'Submit workflow text'})).toBeVisible();await expect(dialog.getByLabel('Workflow procedure')).toHaveValue(source);await expect(dialog.getByRole('status')).toHaveCount(0);
 });

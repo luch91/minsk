@@ -1,6 +1,7 @@
 import {z} from 'zod';
 import type {Workflow} from '@minsk/contracts';
-import {BudgetLedger} from './budget';
+import {BudgetLedger,type CapacityCode} from './budget';
+import {logProviderAttempt,type ProviderResult} from './provider-telemetry';
 
 export const BASETEN_MODEL='meta-models/muse-spark-open-1026' as const;
 const INPUT_RATE=1.25;
@@ -16,13 +17,13 @@ export interface AdversarialModelProvider {
   validateAvailability():boolean;
   getModelMetadata():{provider:string;modelId:string};
 }
-export class ChallengerError extends Error {constructor(public status:number,message:string){super(message);}}
+export class ChallengerError extends Error {constructor(public status:number,message:string,public result:ProviderResult='PROVIDER_FAILURE',public capacityCode?:CapacityCode){super(message);}}
 export function validatedCandidates(content:string|undefined,eligible:Map<string,boolean>,limit:number):Candidate[]{
-  if(content===undefined)throw new ChallengerError(502,'Baseten response has no message content');
-  if(!content.trim())throw new ChallengerError(502,'Baseten response has empty candidate content');
+  if(content===undefined)throw new ChallengerError(502,'Baseten response has no message content','MALFORMED_OUTPUT');
+  if(!content.trim())throw new ChallengerError(502,'Baseten response has empty candidate content','MALFORMED_OUTPUT');
   let parsed:z.infer<typeof responseSchema>;
-  try{parsed=responseSchema.parse(JSON.parse(content));}catch{throw new ChallengerError(502,'Baseten returned malformed candidate JSON');}
-  if(!parsed.candidates.length)throw new ChallengerError(502,'Baseten returned an empty candidate list');
+  try{parsed=responseSchema.parse(JSON.parse(content));}catch{throw new ChallengerError(502,'Baseten returned malformed candidate JSON','MALFORMED_OUTPUT');}
+  if(!parsed.candidates.length)throw new ChallengerError(502,'Baseten returned an empty candidate list','MALFORMED_OUTPUT');
   const unique=new Set<string>();let unknown=0;let unchanged=0;let duplicate=0;
   const valid=parsed.candidates.filter(candidate=>{
     if(!eligible.has(candidate.conditionId)){unknown++;return false;}
@@ -30,14 +31,14 @@ export function validatedCandidates(content:string|undefined,eligible:Map<string
     if(unique.has(candidate.conditionId)){duplicate++;return false;}
     unique.add(candidate.conditionId);return true;
   }).slice(0,limit);
-  if(!valid.length)throw new ChallengerError(502,`Baseten proposed no valid intervention: ${unknown} unknown IDs, ${unchanged} unchanged values, ${duplicate} duplicates`);
+  if(!valid.length)throw new ChallengerError(502,`Baseten proposed no valid intervention: ${unknown} unknown IDs, ${unchanged} unchanged values, ${duplicate} duplicates`,'MALFORMED_OUTPUT');
   return valid;
 }
 export function basetenEstimateMicroUsd(inputBytes:number,outputTokens=MAX_OUTPUT_TOKENS){return Math.ceil(inputBytes*INPUT_RATE+outputTokens*OUTPUT_RATE);}
 export function basetenActualMicroUsd(inputTokens:number,outputTokens:number){return Math.ceil(inputTokens*INPUT_RATE+outputTokens*OUTPUT_RATE);}
 
 export class EligibleOpenWeightInvestigator implements AdversarialModelProvider {
-  constructor(private readonly key:string|undefined,private readonly enabled:boolean,private readonly ledger:DurableObjectStub<BudgetLedger>,private readonly client:string){}
+  constructor(private readonly key:string|undefined,private readonly enabled:boolean,private readonly ledger:DurableObjectStub<BudgetLedger>,private readonly client:string,private readonly correlationId:string){}
   validateAvailability(){return this.enabled&&!!this.key;}
   getModelMetadata(){return {provider:'Baseten',modelId:BASETEN_MODEL};}
   async generateCandidates(workflow:Workflow,constraints:CandidateConstraints,signal:AbortSignal):Promise<ChallengerResult>{
@@ -49,7 +50,7 @@ export class EligibleOpenWeightInvestigator implements AdversarialModelProvider 
     const id=crypto.randomUUID();
     const reservedMicroUsd=basetenEstimateMicroUsd(new TextEncoder().encode(payload).length);
     const reservation=await this.ledger.reserve(id,this.client,reservedMicroUsd,'text',BASETEN_MODEL,'Baseten');
-    if(!reservation.allowed)throw new ChallengerError(reservation.reason?.includes('ceiling')?402:429,reservation.reason??'Baseten request denied');
+    if(!reservation.allowed){logProviderAttempt({correlationId:this.correlationId,provider:'Baseten',modelId:BASETEN_MODEL,requestPurpose:'CHALLENGER_ANALYSIS',latencyMs:0,inputTokens:null,outputTokens:null,fallbackStatus:'NONE',result:'CAPACITY_REJECTED',capacityCode:reservation.code});throw new ChallengerError(429,reservation.reason,'CAPACITY_REJECTED',reservation.code);}
     const timeout=AbortSignal.timeout(30_000);
     const start=performance.now();
     try{
@@ -59,7 +60,8 @@ export class EligibleOpenWeightInvestigator implements AdversarialModelProvider 
       const reported=result.usage?.prompt_tokens!==undefined&&result.usage.completion_tokens!==undefined;
       const latencyMs=Math.round(performance.now()-start);if(reported)await this.ledger.settle(id,basetenActualMicroUsd(result.usage!.prompt_tokens!,result.usage!.completion_tokens!),result.usage!.prompt_tokens,result.usage!.completion_tokens,latencyMs);else await this.ledger.markUnknown(id,latencyMs);
       const valid=validatedCandidates(result.choices?.[0]?.message?.content,new Map(candidates.map(candidate=>[candidate.id,candidate.observedValue as boolean])),Math.min(3,constraints.maxCandidates));
+      logProviderAttempt({correlationId:this.correlationId,provider:'Baseten',modelId:BASETEN_MODEL,requestPurpose:'CHALLENGER_ANALYSIS',latencyMs,inputTokens:reported?result.usage!.prompt_tokens!:null,outputTokens:reported?result.usage!.completion_tokens!:null,fallbackStatus:'NONE',result:'SUCCEEDED'});
       return {candidates:valid,provider:'Baseten',modelId:BASETEN_MODEL,responseId:result.id??null,usage:reported?{inputTokens:result.usage!.prompt_tokens!,outputTokens:result.usage!.completion_tokens!}:null,accountingStatus:reported?'PROVIDER_USAGE':'UNKNOWN_USAGE',telemetry:{latencyMs,reservedMicroUsd,estimatedActualMicroUsd:reported?basetenActualMicroUsd(result.usage!.prompt_tokens!,result.usage!.completion_tokens!):null}};
-    }catch(error){const latencyMs=Math.round(performance.now()-start);const code=signal.aborted?'CANCELLED':timeout.aborted?'TIMEOUT':error instanceof ChallengerError?`HTTP_${error.status}`:'TRANSPORT';await this.ledger.markUnknown(id,latencyMs,code);if(signal.aborted)throw new ChallengerError(499,'Request cancelled');if(timeout.aborted)throw new ChallengerError(504,'Baseten provider timed out');throw error;}
+    }catch(error){const latencyMs=Math.round(performance.now()-start);const result:ProviderResult=signal.aborted?'CANCELLED':timeout.aborted?'TIMEOUT':error instanceof ChallengerError?error.result:'PROVIDER_FAILURE';const code=result==='CANCELLED'?'CANCELLED':result==='TIMEOUT'?'TIMEOUT':error instanceof ChallengerError?`HTTP_${error.status}`:'TRANSPORT';await this.ledger.markUnknown(id,latencyMs,code);logProviderAttempt({correlationId:this.correlationId,provider:'Baseten',modelId:BASETEN_MODEL,requestPurpose:'CHALLENGER_ANALYSIS',latencyMs,inputTokens:null,outputTokens:null,fallbackStatus:'NONE',result,providerStatus:error instanceof ChallengerError?error.status:undefined});if(signal.aborted)throw new ChallengerError(499,'Request cancelled','CANCELLED');if(timeout.aborted)throw new ChallengerError(504,'Baseten provider timed out','TIMEOUT');throw error;}
   }
 }

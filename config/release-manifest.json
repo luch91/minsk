@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "product": {
+    "name": "Minsk",
+    "repository": "luch91/minsk",
+    "judgeUrl": "https://minsk-web-preview.pages.dev"
+  },
+  "judgeActions": {
+    "liveExtraction": "Try live extraction",
+    "modelInvestigation": "Run model-assisted investigation",
+    "basetenChallenger": "Run Baseten challenger",
+    "deterministicDemonstration": "Use deterministic demonstration"
+  },
+  "deployments": {
+    "production": {
+      "label": "Judge production",
+      "status": "current",
+      "frontendUrl": "https://minsk-web-preview.pages.dev",
+      "pagesProject": "minsk-web-preview",
+      "pagesBranch": "main",
+      "apiUrl": "https://minsk-api-preview.judithorluchee.workers.dev",
+      "workerName": "minsk-api-preview",
+      "wranglerConfig": "apps/api/wrangler.preview.jsonc",
+      "liveProviders": true
+    },
+    "releaseCandidate": {
+      "label": "Release candidate",
+      "status": "current",
+      "frontendUrl": "https://release-candidate.minsk-web-preview.pages.dev",
+      "pagesProject": "minsk-web-preview",
+      "pagesBranch": "release-candidate",
+      "apiUrl": "https://minsk-api-preview.judithorluchee.workers.dev",
+      "workerName": "minsk-api-preview",
+      "wranglerConfig": "apps/api/wrangler.preview.jsonc",
+      "liveProviders": true
+    },
+    "historicalDeterministicReview": {
+      "label": "Historical deterministic review",
+      "status": "historical",
+      "frontendUrl": "https://approved-workbench.minsk-web-preview.pages.dev",
+      "pagesProject": "minsk-web-preview",
+      "pagesBranch": "approved-workbench",
+      "apiUrl": "https://faultline-api-visual-preview.judithorluchee.workers.dev",
+      "workerName": "faultline-api-visual-preview",
+      "wranglerConfig": "apps/api/wrangler.review.jsonc",
+      "liveProviders": false
+    }
+  },
+  "executionStates": {
+    "live": "A provider request was admitted and dispatched by the API.",
+    "deterministic": "The Minsk simulator evaluated declared workflow semantics without a provider request.",
+    "disabled": "A server-side provider switch or required configuration prevents dispatch.",
+    "capacity_exhausted": "A server-side allowance or application cap prevents dispatch; no provider request is made.",
+    "unavailable": "Provider availability could not be verified; no live action is represented as successful.",
+    "fallback": "A failed Wonder request was replaced by one admitted Spark provider request and is reported as a fallback."
+  },
+  "vocabulary": {
+    "workflow": "A source-linked graph of conditions, policies, steps, dependencies and execution gates.",
+    "investigation": "Advisory model activity that proposes evidence-linked questions or interventions.",
+    "counterfactual": "An exact condition-value intervention evaluated against a retained baseline.",
+    "safeguard": "A proposed execution-gate change verified by the deterministic simulator.",
+    "certificate": "An integrity record binding source, workflow, trace and outcomes.",
+    "judgePreview": "The current production judge application.",
+    "releaseCandidate": "The candidate alias used to verify a commit before production promotion.",
+    "production": "The canonical judge deployment on the main Pages branch."
+  },
+  "systems": [
+    {
+      "id": "workflow-extraction",
+      "capability": "Workflow extraction",
+      "system": "Meta Muse Spark",
+      "provider": "Meta Model API",
+      "modelIdentifier": "muse-spark-1.3",
+      "purpose": "Convert source text into a reviewable workflow proposal.",
+      "authority": "Non-authoritative until confirmed",
+      "configurationSource": "apps/api/src/models.ts and MODEL_CALLS_ENABLED",
+      "fallbackBehavior": "No deterministic substitution. Provider failure is returned as an error."
+    },
+    {
+      "id": "investigation-assistance",
+      "capability": "Investigation assistance",
+      "system": "Meta Muse Spark",
+      "provider": "Meta Model API",
+      "modelIdentifier": "muse-spark-1.3",
+      "purpose": "Suggest questions, evidence links and tool activity for routine investigations.",
+      "authority": "Advisory",
+      "configurationSource": "apps/api/src/models.ts and MODEL_CALLS_ENABLED",
+      "fallbackBehavior": "No deterministic substitution. Provider failure is returned as an error."
+    },
+    {
+      "id": "complex-investigation",
+      "capability": "Complex investigation",
+      "system": "Meta Muse Wonder",
+      "provider": "Meta Model API",
+      "modelIdentifier": "muse-wonder-1.0",
+      "purpose": "Handle server-routed complex investigations.",
+      "authority": "Advisory",
+      "configurationSource": "apps/api/src/models.ts, MODEL_CALLS_ENABLED and WONDER_ENABLED",
+      "fallbackBehavior": "One separately admitted Spark request may follow Wonder HTTP 502, 503 or 504."
+    },
+    {
+      "id": "challenger-analysis",
+      "capability": "Challenger analysis",
+      "system": "Baseten-hosted challenger",
+      "provider": "Baseten",
+      "modelIdentifier": "meta-models/muse-spark-open-1026",
+      "purpose": "Independently challenge assumptions and propose intervention candidates.",
+      "authority": "Advisory",
+      "configurationSource": "apps/api/src/challenger.ts and BASETEN_CHALLENGER_ENABLED",
+      "fallbackBehavior": "No fallback. Provider failure is returned as an error."
+    },
+    {
+      "id": "policy-evaluation",
+      "capability": "Policy evaluation",
+      "system": "Minsk simulator",
+      "provider": "Minsk",
+      "modelIdentifier": "evaluator-1.0.0",
+      "purpose": "Evaluate conditions, gates and dependencies.",
+      "authority": "Authoritative for declared workflow semantics",
+      "configurationSource": "packages/simulator/src/index.ts",
+      "fallbackBehavior": "Deterministic execution; no provider routing."
+    },
+    {
+      "id": "safeguard-verification",
+      "capability": "Safeguard verification",
+      "system": "Minsk simulator",
+      "provider": "Minsk",
+      "modelIdentifier": "evaluator-1.0.0",
+      "purpose": "Verify whether an intervention blocks unsafe execution.",
+      "authority": "Authoritative for declared workflow semantics",
+      "configurationSource": "packages/simulator/src/index.ts",
+      "fallbackBehavior": "Deterministic execution; no provider routing."
+    },
+    {
+      "id": "certificate",
+      "capability": "Certificate",
+      "system": "Minsk certificate service",
+      "provider": "Minsk",
+      "modelIdentifier": "certificate-v1",
+      "purpose": "Bind inputs, trace and results with integrity metadata.",
+      "authority": "Authoritative integrity record; not issuer authentication",
+      "configurationSource": "packages/simulator/src/certificate.ts",
+      "fallbackBehavior": "No fallback. Export requires validated deterministic results."
+    }
+  ]
+}

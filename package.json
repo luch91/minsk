@@ -15,9 +15,13 @@
     "e2e": "playwright test",
     "lint": "pnpm -r lint",
     "check:content": "node scripts/check-content.mjs",
+    "check:release": "node scripts/check-release-manifest.mjs",
     "check:secrets": "node scripts/check-secrets.mjs",
+    "release:sync": "node scripts/sync-release-reference.mjs",
+    "real-world:generate": "node --import tsx scripts/generate-real-world-reference.ts",
+    "real-world:check": "node --import tsx scripts/generate-real-world-reference.ts --check",
     "dev": "pnpm --parallel --filter @minsk/api --filter @minsk/web dev",
-    "benchmark:checks": "tsc -p model-evaluation/tsconfig.json && pnpm --filter @minsk/api exec vitest run --root ../.. --config apps/api/vitest.config.ts model-evaluation/runner.test.ts"
+    "benchmark:checks": "tsc -p model-evaluation/tsconfig.json && pnpm --filter @minsk/api exec vitest run --root ../.. --config apps/api/vitest.config.ts model-evaluation/runner.test.ts model-evaluation/real-world-reference.test.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -4,7 +4,8 @@ import type { EvaluationResult, Intervention, Workflow } from '@minsk/contracts'
 export type ModelRecord = { id: string | null; modelId: string; provider: string; role: string; usage: unknown; accountingStatus: string };
 export type Investigation = { investigationId?: string; baseline: EvaluationResult; intervention: Intervention; failure: EvaluationResult; verification: { repaired: EvaluationResult; safeguard: { stepId: string; conditionId: string }; resolved: boolean } | null; trace: Array<{ id: string; tool: string; status: string; arguments: unknown; result: unknown; modelId?: string; responseId?: string | null }>; routing?: {modelId:string;reason:string;escalated:boolean}; model: ModelRecord };
 export type Scenario = 'BASELINE' | 'COUNTERFACTUAL' | 'SAFEGUARD';
-export type ProviderStatus = 'loading' | 'available' | 'disabled' | 'unavailable';
+export type ProviderStatus = 'loading' | 'available' | 'capacity_exhausted' | 'disabled' | 'unavailable';
+type ProviderAvailability={meta:ProviderStatus;baseten:ProviderStatus;error:string;remaining:{meta:number|null;baseten:number|null;global:number|null;client:number|null}};
 const API = import.meta.env.VITE_API_URL || '';
 const sessionKey='minsk-public-session';
 let ephemeralSession:string|undefined;
@@ -45,7 +46,7 @@ export function useInvestigation() {
   const [benchmark, setBenchmark] = useState<unknown>(null);
   const [challenger,setChallenger]=useState<unknown>(null);
   const [challengerEnabled,setChallengerEnabled]=useState(false);
-  const [providerStatus,setProviderStatus]=useState<{meta:ProviderStatus;baseten:ProviderStatus;error:string}>({meta:'loading',baseten:'loading',error:''});
+  const [providerStatus,setProviderStatus]=useState<ProviderAvailability>({meta:'loading',baseten:'loading',error:'',remaining:{meta:null,baseten:null,global:null,client:null}});
   const controller = useRef<AbortController | null>(null);
   const revision = useRef(0);
 
@@ -55,7 +56,7 @@ export function useInvestigation() {
     call<{ samples: Workflow[] }>('/api/v1/samples', undefined, ac.signal).then(async response => {
       if (ac.signal.aborted||revision.current!==initialRevision) return;
       setSamples(response.samples);
-      const first = response.samples[0];
+      const first = response.samples.find(sample=>sample.id==='missing-approval')??response.samples[0];
       if (!first) return;
       setWorkflow(first); setSelected(first.steps[0]?.id ?? first.conditions[0]?.id ?? null); setSource(first.sourceDocuments[0]?.text ?? '');
       const evaluated = await call<{ result: EvaluationResult }>('/api/v1/experiments/run', { workflow: first }, ac.signal);
@@ -66,16 +67,16 @@ export function useInvestigation() {
   }, []);
 
   async function refreshBudget(signal?:AbortSignal) {
-    setProviderStatus({meta:'loading',baseten:'loading',error:''});
+    setProviderStatus(previous=>({...previous,meta:'loading',baseten:'loading',error:''}));
     try {
-      const x=await call<{liveModelEnabled:boolean;publicChallengerEnabled:boolean}>('/api/v1/budget',undefined,signal);
+      const x=await call<{liveModelEnabled:boolean;publicChallengerEnabled:boolean;providers:{meta:{state:ProviderStatus;remainingDispatches:number};baseten:{state:ProviderStatus;remainingDispatches:number}};availability:{modelCalls:{globalRemaining:number;clientRemaining:number}}}>('/api/v1/budget',undefined,signal);
       if(signal?.aborted)return;
       setLiveEnabled(x.liveModelEnabled);setChallengerEnabled(x.publicChallengerEnabled);
-      setProviderStatus({meta:x.liveModelEnabled?'available':'disabled',baseten:x.publicChallengerEnabled?'available':'disabled',error:''});
+      setProviderStatus({meta:x.providers.meta.state,baseten:x.providers.baseten.state,error:'',remaining:{meta:x.providers.meta.remainingDispatches,baseten:x.providers.baseten.remainingDispatches,global:x.availability.modelCalls.globalRemaining,client:x.availability.modelCalls.clientRemaining}});
     } catch(e) {
       if(signal?.aborted)return;
       setLiveEnabled(false);setChallengerEnabled(false);
-      setProviderStatus({meta:'unavailable',baseten:'unavailable',error:e instanceof Error?e.message:'Provider status request failed'});
+      setProviderStatus({meta:'unavailable',baseten:'unavailable',error:e instanceof Error?e.message:'Provider status request failed',remaining:{meta:null,baseten:null,global:null,client:null}});
     }
   }
 
@@ -109,14 +110,22 @@ export function useInvestigation() {
     const c = workflow?.conditions.find(item => item.id === id);
     setIntervention(c ? { id: `user-${c.id}`, targetConditionId: c.id, originalValue: c.observedValue, replacementValue: c.observedValue === true ? false : true, reason: 'Manual counterfactual', proposedBy: 'USER', validated: true } : null);
   }
-  function analyze() { return run('Extracting workflow', async s => {const extracted=await call<{ workflow: Workflow; model: ModelRecord }>('/api/v1/workflows/extract', { text: source }, s);const evaluated=await call<{result:EvaluationResult}>('/api/v1/experiments/run',{workflow:extracted.workflow},s);return {extracted,evaluated};},x=>{reset(x.extracted.workflow);setExtractionModel(x.extracted.model);setModelCallCount(n => n + 1);setBaseline(x.evaluated.result);}); }
+  async function analyze() { const response=await run('Extracting workflow', async s => {const extracted=await call<{ workflow: Workflow; model: ModelRecord }>('/api/v1/workflows/extract', { text: source }, s);const evaluated=await call<{result:EvaluationResult}>('/api/v1/experiments/run',{workflow:extracted.workflow},s);return {extracted,evaluated};},x=>{reset(x.extracted.workflow);setExtractionModel(x.extracted.model);setModelCallCount(n => n + 1);setBaseline(x.evaluated.result);});await refreshBudget();return response; }
   function applyIntervention(next = intervention) {
     if (!workflow || !next) return;
     return run('Evaluating counterfactual', s => call<{ result: EvaluationResult }>('/api/v1/experiments/run', { workflow, intervention: next }, s), x => { setIntervention(next); setApplied(next); setFailure(x.result); setVerification(null); setScenario('COUNTERFACTUAL'); setTrace([]); setModel(null); setRouting(undefined); setInvestigationId(null); setCertificate(null); setChallenger(null); });
   }
-  function investigate() {
+  async function investigate() {
     if (!workflow) return;
-    return run('Meta investigation', s => call<Investigation>('/api/v1/investigations', { workflow, ...(intervention?{targetConditionId:intervention.targetConditionId}:{}) }, s), x => { setCertificate(null); setChallenger(null); setBaseline(x.baseline); setIntervention(x.intervention); setApplied(x.intervention); setFailure(x.failure); setVerification(x.verification); setTrace(x.trace); setModel(x.model); setModelCallCount(n => n + new Set([x.model.id, ...x.trace.map(t => t.responseId)].filter(Boolean)).size); setRouting(x.routing); setInvestigationId(x.investigationId ?? null); setScenario('COUNTERFACTUAL'); });
+    const response=await run('Meta investigation', s => call<Investigation>('/api/v1/investigations', { workflow, ...(intervention?{targetConditionId:intervention.targetConditionId}:{}) }, s), x => { setCertificate(null); setChallenger(null); setBaseline(x.baseline); setIntervention(x.intervention); setApplied(x.intervention); setFailure(x.failure); setVerification(x.verification); setTrace(x.trace); setModel(x.model); setModelCallCount(n => n + new Set([x.model.id, ...x.trace.map(t => t.responseId)].filter(Boolean)).size); setRouting(x.routing); setInvestigationId(x.investigationId ?? null); setScenario('COUNTERFACTUAL'); });
+    await refreshBudget();return response;
+  }
+  function demonstrate(next:Workflow) {
+    const target=next.conditions.find(condition=>condition.id==='human-approval')??next.conditions.find(condition=>next.policyRules.some(rule=>rule.requiredConditionIds.includes(condition.id)&&!next.steps.find(step=>step.id===rule.subjectStepId)?.executionGateIds.includes(condition.id)))??next.conditions[0];
+    if(!target){setError('The prepared workflow has no condition to demonstrate.');return;}
+    const replacement=target.valueType==='BOOLEAN'?false:target.observedValue;
+    const demonstration:Intervention={id:`deterministic-${target.id}`,targetConditionId:target.id,originalValue:target.observedValue,replacementValue:replacement,reason:'Prepared deterministic demonstration',proposedBy:'USER',validated:true};
+    return run('Running deterministic demonstration',async s=>{const validated=await call<{workflow:Workflow}>('/api/v1/workflows/validate',next,s);const baselineResult=await call<{result:EvaluationResult}>('/api/v1/experiments/run',{workflow:validated.workflow},s);const changedResult=await call<{result:EvaluationResult}>('/api/v1/experiments/run',{workflow:validated.workflow,intervention:demonstration},s);return {workflow:validated.workflow,baseline:baselineResult.result,failure:changedResult.result,intervention:demonstration};},value=>{reset(value.workflow);setBaseline(value.baseline);setIntervention(value.intervention);setApplied(value.intervention);setFailure(value.failure);setScenario('COUNTERFACTUAL');});
   }
   function verify() {
     if (!workflow || !applied) return;
@@ -131,9 +140,9 @@ export function useInvestigation() {
     });
   }
   function loadBenchmark(){return run('Running benchmark',s=>call<unknown>('/api/v1/benchmark',undefined,s),setBenchmark);}
-  function runChallenger(){if(!workflow)return;return run('Running Baseten challenger',s=>call<unknown>('/api/v1/challengers/open-weight',{workflow,...(investigationId&&applied?{hosted:{investigationId,intervention:applied}}:{})},s),value=>{setChallenger(value);setModelCallCount(n=>n+1);});}
+  async function runChallenger(){if(!workflow)return;const response=await run('Running Baseten challenger',s=>call<unknown>('/api/v1/challengers/open-weight',{workflow,...(investigationId&&applied?{hosted:{investigationId,intervention:applied}}:{})},s),value=>{setChallenger(value);setModelCallCount(n=>n+1);});await refreshBudget();return response;}
   const result = scenario === 'SAFEGUARD' ? verification?.repaired ?? baseline : scenario === 'COUNTERFACTUAL' ? failure ?? baseline : baseline;
   const sceneWorkflow = workflow && scenario === 'SAFEGUARD' && verification ? { ...workflow, steps: workflow.steps.map(step => step.id === verification.safeguard.stepId && !step.executionGateIds.includes(verification.safeguard.conditionId) ? { ...step, executionGateIds: [...step.executionGateIds, verification.safeguard.conditionId] } : step) } : workflow;
-  return { modelCallCount, setError, samples, workflow, sceneWorkflow, selected, setSelected, source, setSource, baseline, failure, verification, intervention, applied, trace, model, extractionModel, routing, scenario, setScenario, result, busy, error, liveEnabled, challengerEnabled,providerStatus,refreshBudget,challenger,runChallenger,loading, certificate, benchmark, loadBenchmark,loadWorkflowJson, selectWorkflow, selectCondition, editCondition, editConditionDetails,editConditionEvidence,editRulePredicate,editRuleEvidence,toggleGate, analyze, applyIntervention, investigate, verify, exportCertificate, cancel: () => controller.current?.abort() };
+  return { modelCallCount, setError, samples, workflow, sceneWorkflow, selected, setSelected, source, setSource, baseline, failure, verification, intervention, applied, trace, model, extractionModel, routing, scenario, setScenario, result, busy, error, liveEnabled, challengerEnabled,providerStatus,refreshBudget,challenger,runChallenger,loading, certificate, benchmark, loadBenchmark,loadWorkflowJson, selectWorkflow, selectCondition, editCondition, editConditionDetails,editConditionEvidence,editRulePredicate,editRuleEvidence,toggleGate, analyze, applyIntervention, investigate, demonstrate, verify, exportCertificate, cancel: () => controller.current?.abort() };
 }
 export type InvestigationState = ReturnType<typeof useInvestigation>;

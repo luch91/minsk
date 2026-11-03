@@ -1,13 +1,35 @@
-# Read-only GitHub Actions configuration case
+# Verified GitHub Actions reference case
 
-Source: this repository's current `.github/workflows/ci.yml` on `main`. It runs dependency installation, content and secret scans, typecheck, lint, unit tests, the deterministic benchmark, build, audit, and browser tests. The workflow has no deployment job, environment reference, deployment credential, or production action.
+Minsk includes one corrected, certificate-bound real-world reference beside the predictable Missing Approval fixture. It is historical public configuration evidence, not current production policy and not part of the synthetic benchmark or accuracy metrics.
 
-On October 30, 2026, authenticated read-only GitHub API calls returned zero repository Environments, one active workflow (`.github/workflows/ci.yml`), and `Branch not protected` for `main`. The authenticated account has repository admin read access. These results can be reproduced with `gh api repos/luch91/minsk/environments`, `gh api repos/luch91/minsk/actions/workflows`, and `gh api repos/luch91/minsk/branches/main/protection`. A 404 on the last call means GitHub reported no branch protection for `main`; it does not establish an unsafe deployment path.
+The source is this repository's CI workflow at immutable revision [`0769cb1`](https://github.com/luch91/minsk/blob/0769cb10564c9c56f4e9467e98e4c6151e21426f/.github/workflows/ci.yml). The repository is MIT licensed. The exact source text is frozen in [`source-ci-0769cb1.yml`](../model-evaluation/real-world-reference/source-ci-0769cb1.yml) with SHA-256 `2857fd50ea7b8b442277909d00789b4f2bc842c84a759c1acc83dc9afdc49afe`.
 
-Verified policy requirement: CI checks are declared in the workflow. Verified execution controls: those checks are run by GitHub Actions on pull requests and main. Absent in this repository: GitHub Environments, protected branch rules, and a deployment job in the inspected workflow. Unobserved: deployment controls in Cloudflare or any other external system. Because this repository workflow does not deploy, a human-approval deployment claim is not applicable here. Any broader claim about release approval remains indeterminate without the external deployment configuration and policy.
+## Evidence record
 
-This case demonstrates the boundary between observed workflow configuration and unobserved external enforcement. No production workflow was executed or modified.
+| Evidence field | Preserved content |
+| --- | --- |
+| Source | Immutable public GitHub URL at revision `0769cb10564c9c56f4e9467e98e4c6151e21426f` |
+| Retrieved | 2 November 2026; MIT licence recorded |
+| Extracted text | Frozen verbatim source plus checked character offsets for every corrected entity |
+| Model output | Original structured extraction in [`raw-meta-extraction.json`](../model-evaluation/real-world-reference/raw-meta-extraction.json) |
+| Corrections | Owner-confirmed OR branch selector, historical-policy boundary and explicit scenario assumptions |
+| Simulation | Corrected baseline is deterministically `SAFE_BLOCK` because the inspected CI workflow contains checks but no deployment action |
+| Counterfactual | Change `c_live_model` from `false` to `true`; result is `UNSAFE_EXECUTION` while the review step remains eligible |
+| Safeguard | Add `c_live_model` as an execution gate on `s_verify_preview`; verified result is `SAFE_BLOCK` |
+| Certificate | Source hash, corrected workflow hash, intervention, trace and outcomes are integrity-bound and independently verified |
 
-The companion [real configuration evidence set](../evaluation/real-configuration-cases.json) records this case alongside the relevant GitHub Actions environment documentation. Its expected labels are independently reasoned from observable configuration and are intentionally `INDETERMINATE` where the configuration does not provide evidence. These two cases expand evidence coverage beyond synthetic simulator fixtures, but they do not establish field accuracy or a real-world detection rate. The frozen source is treated as public configuration evidence, kept separate from the 12 synthetic benchmark fixtures and never presented as a model-generated result.
+## Correction boundary
 
-On November 2, 2026, the release Worker sent the public CI workflow to Meta Muse Spark 1.3 once. The source hash, complete extraction response, provider usage, validation result, deterministic outcome and human review are preserved in [real-world-extraction-2026-11-02.json](../model-evaluation/real-world-extraction-2026-11-02.json). The extracted workflow validated and evaluated as `INDETERMINATE`, matching the independently reasoned label. Review also found that the model represented the three allowed head refs as simultaneous execution gates instead of an OR branch predicate. The evidence is therefore retained as a reviewed extraction with required corrections, not as an accuracy success or an accepted workflow.
+The raw extraction remains unchanged and evaluates as `INDETERMINATE`. It incorrectly represented the three allowed head refs as simultaneous gates. The corrected workflow replaces them with one condition whose evidence is the complete OR expression.
+
+The isolated-preview step is retained because it existed in the frozen source, but the correction explicitly classifies it as historical review evidence rather than current deployment policy. Values used by the corrected deterministic scenario are labelled assumptions; static YAML is not presented as proof that a runtime provider status was observed.
+
+The complete machine-readable record is [`real-world-extraction-2026-11-02.json`](../model-evaluation/real-world-extraction-2026-11-02.json). Its generated artifacts are:
+
+- [`corrected-workflow.json`](../model-evaluation/real-world-reference/corrected-workflow.json)
+- [`counterfactual-and-safeguard.json`](../model-evaluation/real-world-reference/counterfactual-and-safeguard.json)
+- [`certificate.json`](../model-evaluation/real-world-reference/certificate.json)
+
+Run `pnpm real-world:check` to reproduce the workflow, evaluations, hashes and certificate verification. CI fails if any generated artifact or source-linked evidence drifts.
+
+The companion [configuration evidence set](../evaluation/real-configuration-cases.json) retains the broader `INDETERMINATE` assessment: this repository workflow does not reveal external Cloudflare deployment controls, GitHub environment protection or release approval. No production workflow is executed or modified by this reference case.

@@ -16,7 +16,7 @@ Workflow text or structured input
   -> Trace and integrity-checked certificate
 ```
 
-Spark handles extraction and routine investigations. Wonder can be routed to complex investigations. A Baseten-hosted Meta Muse Spark Open challenger proposes additional interventions. Every model proposal is validated and simulator outcomes remain authoritative.
+Spark handles extraction and routine investigations. Wonder can be routed to complex investigations. A Baseten-hosted Meta Muse Spark Open challenger proposes additional interventions. Every model proposal is validated and simulator outcomes remain authoritative. Exact system identifiers, roles, fallbacks and deployment names are derived from the [release manifest](docs/release-reference.md).
 
 ## Quickstart
 
@@ -29,7 +29,7 @@ pnpm benchmark
 pnpm dev
 ```
 
-The offline benchmark uses 12 versioned cases and an independent reference oracle. It makes no provider calls. The [preview](https://minsk-web-preview.pages.dev) exposes a budgeted live test environment only when its server-side switches and provider secrets are configured. Its status is visible at `/api/v1/budget`; a disabled or exhausted provider is reported to the caller rather than simulated.
+The offline benchmark uses 12 versioned cases and an independent reference oracle. It makes no provider calls. The canonical [judge application](https://minsk-web-preview.pages.dev) opens directly on the prepared Missing Approval workflow. `Use deterministic demonstration` remains available without provider access. The three optional live actions are separately labelled and enabled only when server-side switches, credentials, and allowances permit dispatch. Their status is visible through `/api/v1/budget`; a disabled, exhausted, or unavailable provider is reported rather than simulated.
 
 For the Missing Approval fixture, the baseline is `SAFE_EXECUTION`. Changing approval to false yields `UNSAFE_EXECUTION` because deployment lacks that gate. Adding the gate yields `SAFE_BLOCK` while the policy condition remains violated.
 
@@ -42,20 +42,20 @@ Copy the names in [.env.example](.env.example) into the ignored `apps/api/.dev.v
 | `MODEL_API_KEY` | Server-side Meta key | unset |
 | `MODEL_CALLS_ENABLED` | Meta kill switch | false |
 | `WONDER_ENABLED` | Allow Wonder escalation | false |
-| `META_CREDITS_CONFIRMED` and `META_BILLING_MODE` | Operator billing confirmation | false and Standard |
 | `META_CEILING_MICRO_USD` | Cumulative Meta estimate ceiling | 50000000 |
 | `BASETEN_API_KEY` | Server-side Baseten key | unset |
 | `BASETEN_CEILING_MICRO_USD` | Cumulative application estimate ceiling for Baseten | 10000000 |
-| `BASETEN_CHALLENGER_ENABLED` and `BASETEN_CREDITS_CONFIRMED` | Baseten controls | false |
+| `BASETEN_CHALLENGER_ENABLED` | Baseten kill switch | false |
+| `BASETEN_MAX_CALLS_PER_DAY` | Server-side Baseten dispatch cap | 50 |
 | `PUBLIC_CHALLENGER_ENABLED` | Permit public challenger calls | false |
 | `BASETEN_TEST_TOKEN` | Protect challenger access | unset |
 | `MINSK_EVAL_TOKEN` | Protect controlled benchmark access | unset |
 | `MINSK_EVAL_MAX_CALLS`, `MINSK_EVAL_MAX_MICRO_USD` | Controlled evaluation dispatch limit and Meta estimate ceiling | 6 calls, 300000 |
 | `PUBLIC_GLOBAL_REQUESTS_PER_MINUTE`, `PUBLIC_CLIENT_REQUESTS_PER_MINUTE` | Enforced public API request quotas | 300, 30 |
-| `PUBLIC_GLOBAL_MODEL_CALLS_PER_DAY`, `PUBLIC_CLIENT_MODEL_CALLS_PER_DAY` | Enforced public provider-dispatch quotas | 30, 5 |
+| `PUBLIC_GLOBAL_MODEL_CALLS_PER_DAY`, `PUBLIC_CLIENT_MODEL_CALLS_PER_DAY` | Enforced public provider-dispatch quotas | 500, 20 |
 | `ALLOWED_ORIGIN` | Allowed browser origin | unset |
 
-Reservations, settled token estimates and unknown usage are recorded in a persistent Durable Object. Meta defaults to a $50 application estimate ceiling and Baseten defaults to $10. Public quotas are enforced globally and per browser session plus Cloudflare client IP. These controls are not provider billing guarantees. Check [Meta](https://dev.meta.ai/docs/pricing-rate-limits) and [Baseten](https://www.baseten.co/pricing/) rates and account billing conditions before enabling calls.
+Pre-dispatch reservations are recorded in a persistent Durable Object solely to enforce application caps. Public quotas are enforced globally and per browser session plus Cloudflare client IP. The public availability response exposes only remaining dispatch counts and provider state; it never exposes account balances, credentials, or internal cap amounts.
 
 Extracted workflows retain explicit `ALL` or `ANY` policy rules, evidence excerpts, optional freshness requirements in seconds, and optional observation timestamps. The workbench permits operators to correct those values only when evidence remains an exact excerpt of the supplied source. Stale, absent, ambiguous, and contradictory observations evaluate as unknown rather than false.
 
@@ -79,10 +79,10 @@ Routes include `/healthz`, `/api/v1/samples`, `/api/v1/workflows/validate`, `/ap
 
 Run `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`, `pnpm check:content`, `pnpm check:secrets`, `pnpm audit` and `pnpm e2e`. For an API that returns HTML instead of JSON, check `VITE_API_URL`, the Worker health endpoint and its allowed origin. A disabled provider requires the switches, credentials and budget configuration described above.
 
-Further reading: [architecture](docs/architecture.md), [benchmark](docs/benchmark.md), [model integration](docs/model-integration.md), [model evaluation](docs/model-evaluation.md), [provenance](docs/provenance.md), [security](docs/security.md), and [deployment](docs/deployment.md). See [CONTRIBUTING.md](CONTRIBUTING.md) and the [MIT license](LICENSE).
+Further reading: [release reference](docs/release-reference.md), [release certification checklist](docs/release-candidate-checklist.md), [architecture](docs/architecture.md), [benchmark](docs/benchmark.md), [model integration](docs/model-integration.md), [model evaluation](docs/model-evaluation.md), [provenance](docs/provenance.md), [security](docs/security.md), and [deployment](docs/deployment.md). See [CONTRIBUTING.md](CONTRIBUTING.md) and the [MIT license](LICENSE).
 
-The approved interface integration and verification boundaries are documented in [Approved workbench integration](docs/approved-workbench-integration.md).
+The historical approved-interface integration and verification boundaries are documented in [Historical approved workbench integration](docs/approved-workbench-integration.md).
 
-Release evidence: [2 November hardening and complete provider journey](docs/release-hardening-2026-11-02.md). The approved [deterministic workbench preview](https://approved-workbench.minsk-web-preview.pages.dev/) preserves the owner-approved interface and does not dispatch live inference.
+Historical release evidence: [2 November hardening and complete provider journey](docs/release-hardening-2026-11-02.md). The historical [deterministic workbench preview](https://approved-workbench.minsk-web-preview.pages.dev/) does not dispatch live inference and is not the current judge URL.
 
 Audit corrections: [workflow integrity, graph completeness and operator guidance](docs/audit-corrections-2026-11-02.md).

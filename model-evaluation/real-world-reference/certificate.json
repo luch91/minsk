@@ -1,0 +1,283 @@
+{
+  "certificateVersion": "1",
+  "sourceHash": "ee23335cf7fc0698b3fec309fe778817f917ed86dd33265891821a9ee405c5ef",
+  "graphHash": "a7208f840d17eecaf1a11f7ab108309bf912ff3aae73c3d72167b23d6d97e8d9",
+  "baseline": {
+    "id": "64a05ac8ec5be7333ef4ed2497ab1c14c46f51320ead111d376e09140661d0f2",
+    "scenarioId": "real-ci-review-isolation-corrected",
+    "baselineHash": "a7208f840d17eecaf1a11f7ab108309bf912ff3aae73c3d72167b23d6d97e8d9",
+    "interventionHash": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+    "evaluatorVersion": "1.0.0",
+    "stepResults": [
+      {
+        "stepId": "s_install",
+        "eligibility": "SATISFIED",
+        "executes": true
+      },
+      {
+        "stepId": "s_build",
+        "eligibility": "SATISFIED",
+        "executes": true
+      },
+      {
+        "stepId": "s_e2e",
+        "eligibility": "SATISFIED",
+        "executes": true
+      },
+      {
+        "stepId": "s_verify_preview",
+        "eligibility": "SATISFIED",
+        "executes": true
+      },
+      {
+        "stepId": "s_e2e_public",
+        "eligibility": "SATISFIED",
+        "executes": true
+      }
+    ],
+    "policyResults": [
+      {
+        "ruleId": "p_api_isolation",
+        "state": "SATISFIED"
+      },
+      {
+        "ruleId": "p_preview_identity",
+        "state": "SATISFIED"
+      }
+    ],
+    "executionTrace": [
+      {
+        "sequence": 0,
+        "stepId": "s_install",
+        "status": "EXECUTED",
+        "reason": "Execution gates and dependencies satisfied"
+      },
+      {
+        "sequence": 1,
+        "stepId": "s_build",
+        "status": "EXECUTED",
+        "reason": "Execution gates and dependencies satisfied"
+      },
+      {
+        "sequence": 2,
+        "stepId": "s_e2e",
+        "status": "EXECUTED",
+        "reason": "Execution gates and dependencies satisfied"
+      },
+      {
+        "sequence": 3,
+        "stepId": "s_verify_preview",
+        "status": "EXECUTED",
+        "reason": "Execution gates and dependencies satisfied"
+      },
+      {
+        "sequence": 4,
+        "stepId": "s_e2e_public",
+        "status": "EXECUTED",
+        "reason": "Execution gates and dependencies satisfied"
+      }
+    ],
+    "affectedNodeIds": [],
+    "firstViolation": null,
+    "unknownConditions": [],
+    "outcome": "SAFE_BLOCK",
+    "timestamp": "2026-11-03T08:00:00.000Z"
+  },
+  "intervention": {
+    "id": "cf-enable-live-model-on-review-api",
+    "targetConditionId": "c_live_model",
+    "originalValue": false,
+    "replacementValue": true,
+    "reason": "Test whether the historical review step would still execute if live inference were enabled",
+    "proposedBy": "USER",
+    "validated": true
+  },
+  "evaluationResult": {
+    "id": "a1521b6533946f51cb3e8f055b59f8001c771eafe882f97ef04ba8ffd0ff7b95",
+    "scenarioId": "real-ci-review-isolation-corrected",
+    "baselineHash": "a7208f840d17eecaf1a11f7ab108309bf912ff3aae73c3d72167b23d6d97e8d9",
+    "interventionHash": "e74bef1a94b4215b5ef3a575dc0f8e2ca7e673eeb9d98430814aa8bb3419269d",
+    "evaluatorVersion": "1.0.0",
+    "stepResults": [
+      {
+        "stepId": "s_install",
+        "eligibility": "SATISFIED",
+        "executes": true
+      },
+      {
+        "stepId": "s_build",
+        "eligibility": "SATISFIED",
+        "executes": true
+      },
+      {
+        "stepId": "s_e2e",
+        "eligibility": "SATISFIED",
+        "executes": true
+      },
+      {
+        "stepId": "s_verify_preview",
+        "eligibility": "SATISFIED",
+        "executes": true
+      },
+      {
+        "stepId": "s_e2e_public",
+        "eligibility": "SATISFIED",
+        "executes": true
+      }
+    ],
+    "policyResults": [
+      {
+        "ruleId": "p_api_isolation",
+        "state": "VIOLATED"
+      },
+      {
+        "ruleId": "p_preview_identity",
+        "state": "SATISFIED"
+      }
+    ],
+    "executionTrace": [
+      {
+        "sequence": 0,
+        "stepId": "s_install",
+        "status": "EXECUTED",
+        "reason": "Execution gates and dependencies satisfied"
+      },
+      {
+        "sequence": 1,
+        "stepId": "s_build",
+        "status": "EXECUTED",
+        "reason": "Execution gates and dependencies satisfied"
+      },
+      {
+        "sequence": 2,
+        "stepId": "s_e2e",
+        "status": "EXECUTED",
+        "reason": "Execution gates and dependencies satisfied"
+      },
+      {
+        "sequence": 3,
+        "stepId": "s_verify_preview",
+        "status": "EXECUTED",
+        "reason": "Execution gates and dependencies satisfied"
+      },
+      {
+        "sequence": 4,
+        "stepId": "s_e2e_public",
+        "status": "EXECUTED",
+        "reason": "Execution gates and dependencies satisfied"
+      }
+    ],
+    "affectedNodeIds": [
+      "c_live_model",
+      "s_verify_preview",
+      "s_e2e_public"
+    ],
+    "firstViolation": "p_api_isolation",
+    "unknownConditions": [],
+    "outcome": "UNSAFE_EXECUTION",
+    "timestamp": "2026-11-03T08:00:00.000Z"
+  },
+  "violatedRules": [
+    "p_api_isolation"
+  ],
+  "affectedPath": [
+    "c_live_model",
+    "s_verify_preview",
+    "s_e2e_public"
+  ],
+  "safeguard": {
+    "stepId": "s_verify_preview",
+    "conditionId": "c_live_model"
+  },
+  "verificationResult": {
+    "id": "54423c789621f9e2d86f85bc95cf797ec20ba7db214d96935b237d07d76cbeee",
+    "scenarioId": "real-ci-review-isolation-corrected",
+    "baselineHash": "58a5de1b1a22ed78c6fb7aa8c9c6be2cbbe54dfd198594604f34dc8df5003a05",
+    "interventionHash": "e74bef1a94b4215b5ef3a575dc0f8e2ca7e673eeb9d98430814aa8bb3419269d",
+    "evaluatorVersion": "1.0.0",
+    "stepResults": [
+      {
+        "stepId": "s_install",
+        "eligibility": "SATISFIED",
+        "executes": true
+      },
+      {
+        "stepId": "s_build",
+        "eligibility": "SATISFIED",
+        "executes": true
+      },
+      {
+        "stepId": "s_e2e",
+        "eligibility": "SATISFIED",
+        "executes": true
+      },
+      {
+        "stepId": "s_verify_preview",
+        "eligibility": "VIOLATED",
+        "executes": false
+      },
+      {
+        "stepId": "s_e2e_public",
+        "eligibility": "VIOLATED",
+        "executes": false
+      }
+    ],
+    "policyResults": [
+      {
+        "ruleId": "p_api_isolation",
+        "state": "VIOLATED"
+      },
+      {
+        "ruleId": "p_preview_identity",
+        "state": "SATISFIED"
+      }
+    ],
+    "executionTrace": [
+      {
+        "sequence": 0,
+        "stepId": "s_install",
+        "status": "EXECUTED",
+        "reason": "Execution gates and dependencies satisfied"
+      },
+      {
+        "sequence": 1,
+        "stepId": "s_build",
+        "status": "EXECUTED",
+        "reason": "Execution gates and dependencies satisfied"
+      },
+      {
+        "sequence": 2,
+        "stepId": "s_e2e",
+        "status": "EXECUTED",
+        "reason": "Execution gates and dependencies satisfied"
+      },
+      {
+        "sequence": 3,
+        "stepId": "s_verify_preview",
+        "status": "BLOCKED",
+        "reason": "Execution gate violated"
+      },
+      {
+        "sequence": 4,
+        "stepId": "s_e2e_public",
+        "status": "BLOCKED",
+        "reason": "Dependency violated"
+      }
+    ],
+    "affectedNodeIds": [
+      "c_live_model",
+      "s_verify_preview",
+      "s_e2e_public"
+    ],
+    "firstViolation": null,
+    "unknownConditions": [],
+    "outcome": "SAFE_BLOCK",
+    "timestamp": "2026-11-03T08:00:00.000Z"
+  },
+  "modelMetadata": null,
+  "evaluationMetadata": {
+    "evaluatorVersion": "1.0.0",
+    "generatedAt": "2026-11-03T08:00:00.000Z"
+  },
+  "integrityHash": "7920d2c862a6d1ea423f63ea18dfaa88047c199c58cdbf5e09d492c6eea75bc7"
+}

@@ -1,0 +1,280 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "real-ci-review-isolation-corrected",
+  "title": "Historical CI review isolation verification",
+  "sourceDocuments": [
+    {
+      "id": "ci-0769cb1",
+      "text": "name: CI\non:\n  push:\n  pull_request:\njobs:\n  verify:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: pnpm/action-setup@v4\n        with:\n          version: 10.18.3\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 22\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm check:content\n      - run: pnpm check:secrets\n      - run: pnpm typecheck\n      - run: pnpm lint\n      - run: pnpm test\n      - run: pnpm benchmark\n      - run: pnpm benchmark:checks\n      - run: pnpm build\n      - run: pnpm audit\n      - run: pnpm exec playwright install --with-deps chromium\n      - run: pnpm e2e --max-failures=1\n      - name: Verify isolated deployed preview\n        if: github.head_ref == 'feat/approved-workbench-integration' || github.head_ref == 'fix/scenario-guidance' || github.head_ref == 'fix/audit-correctness'\n        env:\n          MINSK_STAGING_URL: https://approved-workbench.minsk-web-preview.pages.dev\n          MINSK_API_URL: https://faultline-api-visual-preview.judithorluchee.workers.dev\n          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-public\n          MINSK_EXPECTED_COMMIT: ${{ github.event.pull_request.head.sha }}\n          MINSK_CHECK_PREVIEW_COMMIT: ${{ github.head_ref == 'fix/audit-correctness' }}\n        run: |\n          node --input-type=module -e \"const r=await fetch(process.env.MINSK_API_URL+'/api/v1/budget'); if(!r.ok)throw new Error('Review API unavailable'); const b=await r.json(); if(b.liveModelEnabled||b.openWeightEnabled||b.publicChallengerEnabled||b.configuration?.keyPresent)throw new Error('Review API must have all providers disabled and no provider key'); console.log('Review API provider isolation verified');\"\n          if [ \"$MINSK_CHECK_PREVIEW_COMMIT\" = \"true\" ]; then\n            node --input-type=module -e \"const r=await fetch(process.env.MINSK_STAGING_URL+'/build-info.json'); if(!r.ok)throw new Error('Preview build identity unavailable'); const b=await r.json(); if(b.sourceCommit!==process.env.MINSK_EXPECTED_COMMIT||b.apiOrigin!==process.env.MINSK_API_URL)throw new Error('Preview does not match the tested source and isolated API'); console.log('Deployed source commit verified: '+b.sourceCommit);\"\n          fi\n          pnpm e2e --max-failures=1 --output=test-results-public\n      - uses: actions/upload-artifact@v4\n        if: always()\n        with:\n          name: minsk-browser-evidence\n          path: |\n            test-results/\n            playwright-report/\n            test-results-public/\n            playwright-report-public/\n          if-no-files-found: ignore\n",
+      "contentHash": "2857fd50ea7b8b442277909d00789b4f2bc842c84a759c1acc83dc9afdc49afe",
+      "createdAt": "2026-11-02T21:00:03.661Z",
+      "schemaVersion": "1.0.0"
+    }
+  ],
+  "conditions": [
+    {
+      "id": "c_review_branch",
+      "name": "Head ref is an allowed historical review branch",
+      "valueType": "BOOLEAN",
+      "expectedValue": true,
+      "observedValue": true,
+      "sourceSpans": [
+        {
+          "sourceId": "ci-0769cb1",
+          "startOffset": 754,
+          "endOffset": 902,
+          "excerpt": "github.head_ref == 'feat/approved-workbench-integration' || github.head_ref == 'fix/scenario-guidance' || github.head_ref == 'fix/audit-correctness'",
+          "verified": true
+        }
+      ],
+      "freshnessRequirement": null,
+      "observedAt": null
+    },
+    {
+      "id": "c_live_model",
+      "name": "Review API live model disabled",
+      "valueType": "BOOLEAN",
+      "expectedValue": false,
+      "observedValue": false,
+      "sourceSpans": [
+        {
+          "sourceId": "ci-0769cb1",
+          "startOffset": 1513,
+          "endOffset": 1531,
+          "excerpt": "b.liveModelEnabled",
+          "verified": true
+        }
+      ],
+      "freshnessRequirement": null,
+      "observedAt": null
+    },
+    {
+      "id": "c_open_weight",
+      "name": "Review API open-weight provider disabled",
+      "valueType": "BOOLEAN",
+      "expectedValue": false,
+      "observedValue": false,
+      "sourceSpans": [
+        {
+          "sourceId": "ci-0769cb1",
+          "startOffset": 1533,
+          "endOffset": 1552,
+          "excerpt": "b.openWeightEnabled",
+          "verified": true
+        }
+      ],
+      "freshnessRequirement": null,
+      "observedAt": null
+    },
+    {
+      "id": "c_public_challenger",
+      "name": "Review API public challenger disabled",
+      "valueType": "BOOLEAN",
+      "expectedValue": false,
+      "observedValue": false,
+      "sourceSpans": [
+        {
+          "sourceId": "ci-0769cb1",
+          "startOffset": 1554,
+          "endOffset": 1579,
+          "excerpt": "b.publicChallengerEnabled",
+          "verified": true
+        }
+      ],
+      "freshnessRequirement": null,
+      "observedAt": null
+    },
+    {
+      "id": "c_key_present",
+      "name": "Review API provider key absent",
+      "valueType": "BOOLEAN",
+      "expectedValue": false,
+      "observedValue": false,
+      "sourceSpans": [
+        {
+          "sourceId": "ci-0769cb1",
+          "startOffset": 1581,
+          "endOffset": 1608,
+          "excerpt": "b.configuration?.keyPresent",
+          "verified": true
+        }
+      ],
+      "freshnessRequirement": null,
+      "observedAt": null
+    },
+    {
+      "id": "c_source_commit_mismatch",
+      "name": "Preview source commit mismatch absent",
+      "valueType": "BOOLEAN",
+      "expectedValue": false,
+      "observedValue": false,
+      "sourceSpans": [
+        {
+          "sourceId": "ci-0769cb1",
+          "startOffset": 2014,
+          "endOffset": 2064,
+          "excerpt": "b.sourceCommit!==process.env.MINSK_EXPECTED_COMMIT",
+          "verified": true
+        }
+      ],
+      "freshnessRequirement": null,
+      "observedAt": null
+    },
+    {
+      "id": "c_api_origin_mismatch",
+      "name": "Preview API origin mismatch absent",
+      "valueType": "BOOLEAN",
+      "expectedValue": false,
+      "observedValue": false,
+      "sourceSpans": [
+        {
+          "sourceId": "ci-0769cb1",
+          "startOffset": 2066,
+          "endOffset": 2105,
+          "excerpt": "b.apiOrigin!==process.env.MINSK_API_URL",
+          "verified": true
+        }
+      ],
+      "freshnessRequirement": null,
+      "observedAt": null
+    }
+  ],
+  "policyRules": [
+    {
+      "id": "p_api_isolation",
+      "description": "Historical review API requires all providers disabled and no provider key",
+      "subjectStepId": "s_verify_preview",
+      "predicate": "ALL",
+      "requiredConditionIds": [
+        "c_live_model",
+        "c_open_weight",
+        "c_public_challenger",
+        "c_key_present"
+      ],
+      "sourceSpans": [
+        {
+          "sourceId": "ci-0769cb1",
+          "startOffset": 1626,
+          "endOffset": 1689,
+          "excerpt": "Review API must have all providers disabled and no provider key",
+          "verified": true
+        }
+      ],
+      "origin": "USER_CONFIRMED"
+    },
+    {
+      "id": "p_preview_identity",
+      "description": "Historical preview must match the tested source and isolated API",
+      "subjectStepId": "s_verify_preview",
+      "predicate": "ALL",
+      "requiredConditionIds": [
+        "c_source_commit_mismatch",
+        "c_api_origin_mismatch"
+      ],
+      "sourceSpans": [
+        {
+          "sourceId": "ci-0769cb1",
+          "startOffset": 2123,
+          "endOffset": 2180,
+          "excerpt": "Preview does not match the tested source and isolated API",
+          "verified": true
+        }
+      ],
+      "origin": "USER_CONFIRMED"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s_install",
+      "name": "Install dependencies",
+      "actionType": "CHECK",
+      "dependsOn": [],
+      "executionGateIds": [],
+      "sourceSpans": [
+        {
+          "sourceId": "ci-0769cb1",
+          "startOffset": 313,
+          "endOffset": 343,
+          "excerpt": "pnpm install --frozen-lockfile",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "s_build",
+      "name": "Build application",
+      "actionType": "CHECK",
+      "dependsOn": [
+        "s_install"
+      ],
+      "executionGateIds": [],
+      "sourceSpans": [
+        {
+          "sourceId": "ci-0769cb1",
+          "startOffset": 558,
+          "endOffset": 568,
+          "excerpt": "pnpm build",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "s_e2e",
+      "name": "Run local browser suite",
+      "actionType": "CHECK",
+      "dependsOn": [
+        "s_build"
+      ],
+      "executionGateIds": [],
+      "sourceSpans": [
+        {
+          "sourceId": "ci-0769cb1",
+          "startOffset": 669,
+          "endOffset": 694,
+          "excerpt": "pnpm e2e --max-failures=1",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "s_verify_preview",
+      "name": "Verify isolated deployed preview",
+      "actionType": "CHECK",
+      "dependsOn": [
+        "s_e2e"
+      ],
+      "executionGateIds": [
+        "c_review_branch"
+      ],
+      "sourceSpans": [
+        {
+          "sourceId": "ci-0769cb1",
+          "startOffset": 709,
+          "endOffset": 741,
+          "excerpt": "Verify isolated deployed preview",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "s_e2e_public",
+      "name": "Run browser suite against historical preview",
+      "actionType": "CHECK",
+      "dependsOn": [
+        "s_verify_preview"
+      ],
+      "executionGateIds": [
+        "c_review_branch"
+      ],
+      "sourceSpans": [
+        {
+          "sourceId": "ci-0769cb1",
+          "startOffset": 2273,
+          "endOffset": 2327,
+          "excerpt": "pnpm e2e --max-failures=1 --output=test-results-public",
+          "verified": true
+        }
+      ]
+    }
+  ]
+}
