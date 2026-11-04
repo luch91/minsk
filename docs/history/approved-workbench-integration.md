@@ -2,7 +2,7 @@
 
 > Historical pre-production integration record. It does not define the current judge deployment or release status. See the [authoritative release reference](../release-reference.md).
 
-The corrected reference prototype was approved on 1 November 2026. Its dark panel composition, typography, colours, aligned evidence signals and checkpoint labels are the visual baseline. This branch integrates that interface with the existing application. The standalone prototype remains available separately.
+The corrected reference prototype was approved on 1 November 2026. A third-party moodboard reference informed its broad dark, information-dense direction; no reference image, logo or source asset is distributed in this repository. This branch integrated the prototype with the existing application, and the current interface has its own Minsk wordmark, animated field and workflow-specific interaction system. See the current [design and asset provenance](../design-provenance.md) record.
 
 ## Architecture
 
