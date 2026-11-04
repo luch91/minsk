@@ -34,3 +34,21 @@ Known limits: Baseten candidate reliability was imperfect in the historical run;
 The [Meta event page](https://dev.meta.ai/events/global-hackathon) and [Cerebral Valley event page](https://cerebralvalley.ai/e/meta-ai-developer-hackathon) state that project submissions are due **November 4, 2026 at 9:00 PM ET**. They describe Indie Developer and Startup tracks and the Build for Your World and Push the Frontier themes. The event page describes the Indie track in terms of creativity, technical ambition, and a working result, and the Startup track in terms of technical execution and production durability. These are the published track descriptions, not a claim about an unpublished scoring rubric.
 
 The public pages still refer selected participants to Official Rules, but the full accepted rules and authenticated submission form were not accessible in this review. Therefore the exact required fields, video format or length, repository visibility rules, and final submission receipt are **not verified**. The owner must check the accepted rules and live submission form before filing. This package supplies evidence and a demonstration script; it does not claim a completed hackathon submission and does not include a demo video.
+
+## Release handoff evidence recorded on 2026-11-04
+
+The release-candidate and production deployments below were built from the same application commit. Both Cloudflare Pages deployments completed successfully before the final production verification.
+
+| Evidence | Reference |
+| --- | --- |
+| Canonical judge URL | [https://minsk.pages.dev](https://minsk.pages.dev) |
+| Production build identity | [build-info.json](https://minsk.pages.dev/build-info.json) |
+| Immutable production deployment | [5376128f](https://5376128f.minsk.pages.dev) |
+| Release-candidate alias | [https://release-candidate.minsk.pages.dev](https://release-candidate.minsk.pages.dev) |
+| Immutable release-candidate deployment | [ad4bc74f](https://ad4bc74f.minsk.pages.dev) |
+| Application release commit | [`93dd7b8016b402d1827976410a8dddd745a3cba5`](https://github.com/luch91/minsk/commit/93dd7b8016b402d1827976410a8dddd745a3cba5) |
+| Startup-render fix and full browser CI | [PR #24](https://github.com/luch91/minsk/pull/24) · [CI run 41709786718](https://github.com/luch91/minsk/actions/runs/41709786718) |
+| Guided README and documentation CI | [PR #25](https://github.com/luch91/minsk/pull/25) · [CI run 41715031044](https://github.com/luch91/minsk/actions/runs/41715031044) |
+| Documentation commit | [`2ee785ae69213bc128be9f7e1a91e4d53f9293bf`](https://github.com/luch91/minsk/commit/2ee785ae69213bc128be9f7e1a91e4d53f9293bf) |
+
+Cloudflare reports deployment `5376128f-aaec-4607-b0ee-7381efb8909f` as a successful production deployment from `main` and deployment `ad4bc74f-e1e5-4f9f-87da-26f7745bc06e` as a successful preview deployment from `release-candidate`. Each reports application commit `93dd7b8016b402d1827976410a8dddd745a3cba5`. Provider billing, balances, and request-usage values are intentionally excluded from this evidence file.
