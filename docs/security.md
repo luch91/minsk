@@ -1,4 +1,4 @@
-# Security and spending controls
+# Security and provider controls
 
 Workflow text is untrusted data. Minsk does not execute it. Provider tool names and arguments are validated before the deterministic simulator runs, and model hypotheses never determine an execution outcome. API request bodies are capped, origins must exactly match `ALLOWED_ORIGIN`, and provider keys stay in ignored local secret files or Cloudflare secrets.
 

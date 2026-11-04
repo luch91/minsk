@@ -169,6 +169,13 @@ describe('deterministic HTTP flow',()=>{
     expect(JSON.stringify(payload)).not.toMatch(/balance|credit|usd|keyPresent|credential/i);
     expect(payload).toMatchObject({availability:{requests:{globalRemaining:299,clientRemaining:29},modelCalls:{globalRemaining:500,clientRemaining:20}},providers:{meta:{state:'disabled',remainingDispatches:20},baseten:{state:'disabled',remainingDispatches:20}}});
   });
+  it('publishes historical quality results without provider usage metadata',async()=>{
+    const response=await api.fetch(new Request('http://localhost/api/v1/evaluation/history'),env);
+    expect(response.status).toBe(200);
+    const payload=await response.json();
+    expect(payload).toMatchObject({distinctCases:8,tasks:48});
+    expect(JSON.stringify(payload)).not.toMatch(/dispatch|token|usage|budget|credit|usd/i);
+  });
   it('keeps the open-weight challenger disabled without separate credentials and switch',async()=>{
     const response=await post('/api/v1/challengers/open-weight',{workflow:missingApproval});
     expect(response.status).toBe(503);

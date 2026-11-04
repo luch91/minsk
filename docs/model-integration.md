@@ -10,7 +10,7 @@ The controlled benchmark Worker uses `MINSK_EVAL_TOKEN`, `MINSK_EVAL_MAX_CALLS` 
 
 Public preview quotas are configured with `PUBLIC_GLOBAL_REQUESTS_PER_MINUTE`, `PUBLIC_CLIENT_REQUESTS_PER_MINUTE`, `PUBLIC_GLOBAL_MODEL_CALLS_PER_DAY`, and `PUBLIC_CLIENT_MODEL_CALLS_PER_DAY`. A browser supplies a locally generated opaque session identifier and Cloudflare supplies its client IP. Neither identity is an authentication credential; controlled benchmarking still requires the server-side evaluation token.
 
-See [the local live smoke evidence](issue8-live-smoke.md) for actual provider results, [the historical model evaluation](model-evaluation.md) for the prior experiment, and [security](security.md) for deployment controls. A small synthetic sample does not establish real-world reliability. Certificate integrity verifies consistency and does not authenticate the issuer.
+See [the historical provider smoke](history/issue8-live-smoke.md) for actual provider results, [the historical model evaluation](model-evaluation.md) for the prior experiment, and [security](security.md) for deployment controls. A small synthetic sample does not establish real-world reliability. Certificate integrity verifies consistency and does not authenticate the issuer.
 
 ## Historical approved-workbench live verification, 1 November 2026
 
@@ -31,7 +31,7 @@ The historical Baseten challenger found that tests=false and migration=false saf
 
 The verification used bounded server-side admission, output and provider controls. Credentials remained server-side; no account information is included.
 
-The browser exported and verified certificate integrity and original input. Integrity hash: `32005eba9d33c50017ad9fa0e63beac7aea0686aab0e3a1c9071aa203d1285a9`. Issuer authenticity remains `NOT_VERIFIED`. Certificate provenance covers the attested investigation; Baseten comparison and extraction evidence are separate.
+The browser exported and verified certificate integrity and original input. Issuer authenticity remains `NOT_VERIFIED`. The public repository retains the quality summary and privacy-clean certificate rather than raw provider recordings.
 
 Exact historical frontend source: `6c905ee807feb54b35798f49f7e46aed4b84eb17`. The temporary branch deployment and approved-workbench alias are historical evidence, not current release endpoints. Current endpoints are defined in the [release reference](release-reference.md).
 
@@ -39,4 +39,4 @@ Release findings: extraction required human correction, and correcting workflow 
 
 ## Release hardening, 2 November 2026
 
-The complete extraction, review, Meta tool investigation, independent Baseten comparison, replay and attested certificate journey was verified through the actual browser. See the [historical release hardening report](release-hardening-2026-11-02.md) for preserved controls and raw evidence. Current model roles and endpoints come only from the [release reference](release-reference.md).
+The complete extraction, review, Meta tool investigation, independent Baseten comparison, replay and certificate journey was verified through the actual browser. See the [historical release hardening report](history/release-hardening-2026-11-02.md) for preserved controls and privacy-clean evidence. Current model roles and endpoints come only from the [release reference](release-reference.md).

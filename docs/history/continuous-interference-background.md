@@ -1,5 +1,7 @@
 # Continuous interference background
 
+> Historical implementation note. Current release information is maintained in the [release reference](../release-reference.md).
+
 The owner-approved combination uses the earlier dark palette (ink navy #060d15, header/sidebar #080f19, panels #101c28) with cyan #42d5f5, lime #a3e635 and coral #ff6574. Existing layout, workflow data, graph semantics and API contracts are preserved.
 
 A single decorative Canvas 2D component is mounted at the application root before the workflow-loading branch. The header, sidebar, metrics and every workspace view use the same fixed background. Navigation, tabs, inspections and workflow state updates do not remount it. Its phase lives in a ref and survives pause/resume and resizing. A full browser reload starts a new timeline; it is not an in-app navigation.

@@ -127,49 +127,10 @@
     "outcome": "SAFE_BLOCK",
     "timestamp": "2026-11-02T04:45:03.829Z"
   },
-  "modelMetadata": {
-    "provider": "Meta Model API",
-    "model": "muse-spark-1.3",
-    "responseIds": [
-      "resp_6ae814bcb1ba293992c6452b",
-      "resp_6ae814becfcd5ddbc03b4c9f"
-    ],
-    "toolCallIds": [
-      "call_e05199d4-3dd7-4a4f-9674-997d48d638ec",
-      "call_99250383-3a09-4330-ba0a-cace1aadcdca"
-    ],
-    "inputTokens": 1922,
-    "outputTokens": 352,
-    "calls": [
-      {
-        "modelId": "muse-spark-1.3",
-        "role": "COUNTERFACTUAL",
-        "responseId": "resp_6ae814bcb1ba293992c6452b",
-        "toolCallId": "call_e05199d4-3dd7-4a4f-9674-997d48d638ec",
-        "toolArgumentsJson": "{\"conditionId\":\"c_approval\",\"replacementValue\":false}",
-        "toolResultJson": "{\"outcome\":\"UNSAFE_EXECUTION\",\"firstViolation\":\"pr_prod\",\"policyResults\":[{\"ruleId\":\"pr_prod\",\"state\":\"VIOLATED\"}],\"stepResults\":[{\"stepId\":\"s_deploy\",\"eligibility\":\"SATISFIED\",\"executes\":true}]}",
-        "inputTokens": 818,
-        "outputTokens": 178,
-        "accountingStatus": "PROVIDER_USAGE",
-        "routingReason": "Routine validated workflow"
-      },
-      {
-        "modelId": "muse-spark-1.3",
-        "role": "SAFEGUARD",
-        "responseId": "resp_6ae814becfcd5ddbc03b4c9f",
-        "toolCallId": "call_99250383-3a09-4330-ba0a-cace1aadcdca",
-        "toolArgumentsJson": "{\"stepId\":\"s_deploy\",\"conditionId\":\"c_approval\"}",
-        "toolResultJson": "{\"repairedOutcome\":\"SAFE_BLOCK\",\"resolved\":true}",
-        "inputTokens": 1104,
-        "outputTokens": 174,
-        "accountingStatus": "PROVIDER_USAGE",
-        "routingReason": "Routine validated workflow"
-      }
-    ]
-  },
+  "modelMetadata": null,
   "evaluationMetadata": {
     "evaluatorVersion": "1.0.0",
     "generatedAt": "2026-11-02T04:45:03.979Z"
   },
-  "integrityHash": "f02abfc0613de127a3abf420df8ad929bce655d068e4f53f3e5c88840a379d80"
+  "integrityHash": "9cbb82549a47326458ec4b31fe35167754cb23e4f76ec04e25107933f9ad62e1"
 }
