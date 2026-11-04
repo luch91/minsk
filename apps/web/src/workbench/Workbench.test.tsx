@@ -1,6 +1,6 @@
 import {renderToStaticMarkup} from 'react-dom/server';
 import {describe,expect,it,vi} from 'vitest';
-import {Workbench} from './Workbench';
+import {Workbench,hasObservedBooleanCondition} from './Workbench';
 import {missingApproval} from '../../../../fixtures/workflows/missing-approval';
 import {realWorldCiReference} from '../../../../fixtures/workflows/real-world-ci-reference';
 import type {InvestigationState} from '../useInvestigation';
@@ -8,6 +8,12 @@ import type {InvestigationState} from '../useInvestigation';
 vi.mock('./icons',()=>({Icon:()=>null}));
 
 describe('Minsk workbench rendering',()=>{
+  it('requires a known Boolean observation before live investigation',()=>{
+    expect(hasObservedBooleanCondition(missingApproval)).toBe(true);
+    const unknown={...missingApproval,conditions:missingApproval.conditions.map(condition=>({...condition,observedValue:null}))};
+    expect(hasObservedBooleanCondition(unknown)).toBe(false);
+  });
+
   it('renders imported JSX with a single available workflow',()=>{
     const state={workflow:missingApproval,sceneWorkflow:missingApproval,samples:[missingApproval,realWorldCiReference],source:missingApproval.sourceDocuments[0]?.text??'',baseline:null,failure:null,verification:null,applied:null,trace:[],scenario:'BASELINE',result:null,busy:'',error:'',liveEnabled:false,challengerEnabled:false,providerStatus:{meta:'disabled',baseten:'disabled',error:'',remaining:{meta:0,baseten:0,global:0,client:0}},certificate:null,setError:()=>{},setSource:()=>{},setScenario:()=>{}} as unknown as InvestigationState;
     const html=renderToStaticMarkup(<Workbench state={state}/>);
