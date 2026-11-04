@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-labelledby="title desc">
+  <title id="title">Minsk counterfactual gate mark</title>
+  <desc id="desc">Two workflow paths meet at a verified gate.</desc>
+  <rect x="1" y="1" width="30" height="30" rx="8" fill="#08131e" stroke="#31556a" stroke-width="2"/>
+  <path d="M8 23V9l8 8 8-8v14" fill="none" stroke="#42d5f5" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M11 24h10" fill="none" stroke="#a3e635" stroke-width="2.6" stroke-linecap="round"/>
+  <circle cx="16" cy="17" r="3" fill="#a3e635" stroke="#08131e" stroke-width="1.5"/>
+</svg>

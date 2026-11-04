@@ -12,6 +12,8 @@ describe('Minsk workbench rendering',()=>{
     const state={workflow:missingApproval,sceneWorkflow:missingApproval,samples:[missingApproval,realWorldCiReference],source:missingApproval.sourceDocuments[0]?.text??'',baseline:null,failure:null,verification:null,applied:null,trace:[],scenario:'BASELINE',result:null,busy:'',error:'',liveEnabled:false,challengerEnabled:false,providerStatus:{meta:'disabled',baseten:'disabled',error:'',remaining:{meta:0,baseten:0,global:0,client:0}},certificate:null,setError:()=>{},setSource:()=>{},setScenario:()=>{}} as unknown as InvestigationState;
     const html=renderToStaticMarkup(<Workbench state={state}/>);
     expect(html).toContain('Investigation Workbench');
+    expect(html).toContain('/minsk-mark.svg');
+    expect(html).toContain('aria-label="Minsk home"');
     expect(html).toContain('Policy checkpoints');
     expect(html).toContain('Approval');
     expect(html).toContain('Historical CI review isolation verification');
