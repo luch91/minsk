@@ -6,9 +6,9 @@ Minsk has two separate evaluation modes. `pnpm benchmark` is deterministic, offl
 
 Each result file records the locked reference, API latency, provider and model identity, errors, fallback state, extraction checks, outcome agreement, unsafe-detection confusion counts, correct indeterminate handling, and independently verified safeguards. The command fails on provider errors instead of presenting a partial run as success. Results are written to ignored `model-evaluation/results/`.
 
-The historical controlled comparison remains immutable in `model-evaluation/`. It covers eight synthetic scenarios and is not real-world accuracy evidence. See `report-2026-10-30.md`, `scored-2026-10-30.json`, and `ground-truth.json` for exact samples and limitations.
+The historical controlled comparison remains versioned in `model-evaluation/`. It covers eight synthetic scenarios and is not real-world accuracy evidence. The public repository retains privacy-clean classification results and limitations, not raw provider responses or operational metadata. See `report-2026-10-30.md`, `scored-2026-10-30.json`, and `ground-truth.json`.
 
-The evaluation dispatch limit covers both providers. `MINSK_EVAL_MAX_MICRO_USD` is a Meta-only controlled-evaluation estimate limit. Meta's application ceiling defaults to $50 and Baseten's separate application ceiling defaults to $10. Both retain authentication, input validation, request, dispatch, timeout and rate controls. Neither local estimate is a provider-side billing guarantee.
+The evaluation dispatch limit covers both providers. `MINSK_EVAL_MAX_MICRO_USD` is a Meta-only controlled-evaluation admission limit. Meta and Baseten retain separate application caps, authentication, input validation, request, dispatch, timeout and rate controls. These local controls are not provider-side billing guarantees.
 
 ## Scoring protocol v2
 
@@ -24,4 +24,4 @@ Strict extraction checks cover schema/references, exact source and hash, all nam
 
 Failed scoring yields COMPLETED_WITH_FAILURES and a nonzero exit even when all HTTP requests succeed. Budget or rate exhaustion yields STOPPED. Partial work is retained, with planned denominators explicit. Provider estimates are not invoices.
 
-See [the fresh 1 November report](benchmark-hardening-2026-11-01.md), including immutable response evidence and an offline-only rescore.
+See [the 1 November historical report](history/benchmark-hardening-2026-11-01.md) for a dated quality summary and limitations.

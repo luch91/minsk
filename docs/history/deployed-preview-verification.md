@@ -1,6 +1,6 @@
 # Isolated deployed workbench verification
 
-> Historical evidence from the pre-production deterministic review gate. The names and URLs below are retained for provenance and are not current release endpoints. See the [authoritative release reference](release-reference.md).
+> Historical evidence from the pre-production deterministic review gate. The names and URLs below are retained for provenance and are not current release endpoints. See the [authoritative release reference](../release-reference.md).
 
 Frontend: https://approved-workbench.minsk-web-preview.pages.dev
 Pages project: minsk-web-preview
@@ -42,4 +42,4 @@ Advisory: https://github.com/advisories/GHSA-g3hv-75wg-m249
 
 ## Release boundary
 
-Keep PR 12 draft and unmerged. This gate does not authorise a model request, provider spending, main deployment or merge. Live extraction and investigation require a separately authorised credit-controlled test. No personal spending was introduced.
+Keep PR 12 draft and unmerged. This gate does not authorise a model request, provider spending, main deployment or merge. Live extraction and investigation require a separately authorised bounded test. No personal spending was introduced.

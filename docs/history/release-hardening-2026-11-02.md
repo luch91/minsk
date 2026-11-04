@@ -1,6 +1,6 @@
 # Release hardening and provider journey, 2 November 2026
 
-> Historical verification evidence. It records the state of the 2 November gate and does not define current deployment names or release status. See the [authoritative release reference](release-reference.md).
+> Historical verification evidence. It records the state of the 2 November gate and does not define current deployment names or release status. See the [authoritative release reference](../release-reference.md).
 
 Merge recommendation: GO when the current PR head passes CI. PR 12 remains draft and unmerged until owner authorisation. This recommendation concerns merging the tested implementation; production activation remains a separate release decision.
 
@@ -15,7 +15,7 @@ The approved dark palette, component layout and persistent interference field ar
 - Invalid upstream tool JSON, unknown targets and unchanged observations are rejected with controlled provider errors. Provider response bodies and credentials are not returned to users.
 - Request bodies are capped at 60,000 streamed UTF-8 bytes before decoding. Browser storage denial no longer prevents API requests. Provider availability is fetched once per initialisation.
 - Editing a workflow prevents an initial baseline request from overwriting its result. A successful new experiment or investigation invalidates previous certificate and comparison results. The counterfactual form follows the condition selected by the model.
-- Certificate text distinguishes absent attested provenance from an assertion that no model was used. Meta certificate attestation remains checked against the server ledger and recomputed workflow results.
+- Certificate text distinguishes absent provenance from an assertion that no model was used. Historical model call records were reviewed during the gate but are excluded from the public repository; the retained certificate is privacy-clean.
 
 ## Actual live browser verification
 
@@ -37,13 +37,13 @@ Spark extraction returned a source-linked workflow whose interpretation was conf
 
 The investigation showed actual tool arguments and returned simulator results rather than a fabricated reasoning transcript.
 
-The Baseten comparison records are retained separately from the Meta certificate.
+The historical quality summary remains separate from the certificate.
 
 The historical journey used bounded server-side admission and provider controls. No account information is included.
 
-The actual exported certificate hash is f02abfc0613de127a3abf420df8ad929bce655d068e4f53f3e5c88840a379d80. Browser verification and the independent CLI both returned valid=true and inputVerified=true. Issuer authenticity remains NOT_VERIFIED.
+The privacy-clean certificate hash is `9cbb82549a47326458ec4b31fe35167754cb23e4f76ec04e25107933f9ad62e1`. Independent verification returns `valid=true` and `inputVerified=true`. Issuer authenticity remains `NOT_VERIFIED`.
 
-Raw evidence: [workflow](../model-evaluation/evidence/2026-11-02-release/workflow.json), [certificate](../model-evaluation/evidence/2026-11-02-release/certificate.json), [Meta tool records](../model-evaluation/evidence/2026-11-02-release/meta-tool-records.json), [model provenance](../model-evaluation/evidence/2026-11-02-release/model-provenance.json), and [Baseten comparison](../model-evaluation/evidence/2026-11-02-release/baseten-comparison.json).
+Privacy-clean evidence: [workflow](../../model-evaluation/evidence/2026-11-02-release/workflow.json) and independently verifiable [certificate](../../model-evaluation/evidence/2026-11-02-release/certificate.json). Raw provider outputs and operational metadata are intentionally excluded.
 
 ## Isolation and release boundaries
 
@@ -61,4 +61,4 @@ Local checks passed: 83 unit tests (66 API, 16 simulator, one web rendering), th
 
 The full dependency audit reports one moderate advisory affecting development-only minimatch versions 3.1.5 and 10.2.6 through the lint toolchain, with no high or critical advisory. Registry inspection confirms the current ESLint 10 release still depends on minimatch 10. A forced major-version override is not a verified compatible repair. No runtime dependency or paid infrastructure was added. This lint-toolchain advisory is documented as a residual development risk, not a zero-advisory claim.
 
-This historical gate preceded production activation. Current frontend/API origins and release terminology are defined in the [release reference](release-reference.md); current-head CI and deployed smoke verification remain required for each release.
+This historical gate preceded production activation. Current frontend/API origins and release terminology are defined in the [release reference](../release-reference.md); current-head CI and deployed smoke verification remain required for each release.

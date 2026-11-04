@@ -118,7 +118,7 @@ export default {async fetch(request:Request,env:Env):Promise<Response>{
     }
     if(url.pathname==='/api/v1/samples'&&request.method==='GET')return reply({samples:[...await referenceSamples(),sample02.workflow,sample07.workflow,sample08.workflow,sample09.workflow]},200,headers);
     if(url.pathname==='/api/v1/benchmark'&&request.method==='GET')return reply(await runBenchmark(),200,headers);
-    if(url.pathname==='/api/v1/evaluation/history'&&request.method==='GET')return reply({label:'Historical synthetic evaluation, 2026-10-30',distinctCases:historicalScores.distinctCases,tasks:historicalScores.scenarioModelTasks,dispatches:historicalScores.providerDispatches,groups:historicalScores.groups.map(group=>({method:group.method,model:group.model,tasks:group.tasks,successes:group.successes,errors:group.errors,confusion:group.confusion,correctAbstentions:group.correctAbstentions,verifiedRepairs:group.verifiedRepairs,extraction:group.extraction}))},200,headers);
+    if(url.pathname==='/api/v1/evaluation/history'&&request.method==='GET')return reply({label:'Historical synthetic evaluation, 2026-10-30',distinctCases:historicalScores.distinctCases,tasks:historicalScores.scenarioModelTasks,groups:historicalScores.groups.map(group=>({method:group.method,model:group.model,tasks:group.tasks,successes:group.successes,errors:group.errors,confusion:group.confusion,correctAbstentions:group.correctAbstentions,verifiedRepairs:group.verifiedRepairs,extraction:group.extraction}))},200,headers);
     if(request.method!=='POST')return reply({error:'Route not found',correlationId:id},404,headers);
     const data=await readJson(request);
     if(url.pathname==='/api/v1/workflows/validate')return reply({workflow:validateWorkflow(data)},200,headers);

@@ -206,7 +206,7 @@ pnpm audit
 pnpm e2e
 ```
 
-CI runs the same release gates, including desktop and mobile browser journeys for exhausted quota, timeout, malformed output, provider failure, fallback behavior, and the deterministic acceptance path.
+CI runs the same release gates. Desktop and mobile browser journeys cover capacity exhaustion, explicit live-request failures and the deterministic acceptance path. API regression tests cover timeouts, malformed provider output, provider failures and fallback behavior.
 
 ## Documentation
 
@@ -223,4 +223,4 @@ CI runs the same release gates, including desktop and mobile browser journeys fo
 - [Contributing](CONTRIBUTING.md)
 - [MIT license](LICENSE)
 
-Historical interface-integration, hardening, and audit records remain available in [`docs`](docs/) for provenance. The historical deterministic preview is not the current judge URL.
+Historical interface-integration, hardening and audit records are indexed in [`docs/history`](docs/history/). The historical deterministic preview is not the current judge URL.

@@ -1,6 +1,6 @@
 # Workbench audit corrections
 
-> Historical correction-gate evidence. Current environment names and release status are defined in the [authoritative release reference](release-reference.md).
+> Historical correction-gate evidence. Current environment names and release status are defined in the [authoritative release reference](../release-reference.md).
 
 The approved interface and provider/evaluator architecture are preserved. These changes correct the failures reproduced in the 2 November application audit.
 
