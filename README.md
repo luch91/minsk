@@ -219,6 +219,8 @@ CI runs the same release gates. Desktop and mobile browser journeys cover capaci
 - [Benchmark methodology](docs/benchmark.md)
 - [Provenance](docs/provenance.md)
 - [Security](docs/security.md)
+- [Design and asset provenance](docs/design-provenance.md)
+- [Third-party notices](THIRD_PARTY_NOTICES.md)
 - [Deployment and rollback](docs/deployment.md)
 - [Contributing](CONTRIBUTING.md)
 - [MIT license](LICENSE)
