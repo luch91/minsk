@@ -6,6 +6,18 @@
 [![pnpm 10.18.3](https://img.shields.io/badge/pnpm-10.18.3-f69220?logo=pnpm&logoColor=white)](https://pnpm.io/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+## Hackathon Submission
+
+| Field | Details |
+| --- | --- |
+| Event | Meta Global AI Developer Hackathon 2026 |
+| Track | Indie Developer |
+| Theme | Push the Frontier |
+| Live application | [https://minsk.pages.dev/](https://minsk.pages.dev/) |
+| Demo video | [Watch the Minsk demonstration](https://youtu.be/AAyDCW-5OKI) |
+
+Minsk turns workflow evidence into a reviewable policy and execution model, then deterministically tests counterfactuals and safeguards. Meta Muse Spark extracts source text into a structured proposal and assists routine investigations. Meta Muse Wonder supports server-routed complex investigations. Both models remain advisory, while Minsk's simulator determines execution outcomes from the confirmed workflow.
+
 **Minsk finds the gap between what an automated workflow says must happen and what its execution path actually enforces.**
 
 It turns workflow evidence into a reviewable model, evaluates the declared policy, tests a counterfactual, verifies a proposed safeguard, and produces an integrity-checked certificate. Models may help extract or challenge an interpretation; Minsk's deterministic simulator remains the authority for every execution outcome.

@@ -4,7 +4,9 @@
 
 Minsk compares an agent workflow's declared policy with its actual execution gates. It accepts a structured workflow or uses Muse Spark to extract one from text, validates source spans, evaluates the baseline, tests a changed condition, and checks a proposed gate in a deterministic simulator. A Counterexample Certificate records the workflow and source hashes, intervention, trace, outcomes, and any attested model calls. The simulator models declared workflow behavior; it does not execute a deployment or establish the state of external infrastructure.
 
-The exact provider identifiers, purposes, authority boundaries, configuration sources and fallback behaviour are defined by the [authoritative release reference](release-reference.md). Models propose hypotheses; the deterministic evaluator decides execution outcomes. The [judge application](https://minsk.pages.dev) opens directly on the prepared Missing Approval workflow and exposes live actions only when server-side provider controls report availability. It does not require Settings, BYOK, or provider-routing knowledge. The [public repository](https://github.com/luch91/minsk) contains the implementation and release evidence.
+The exact provider identifiers, purposes, authority boundaries, configuration sources and fallback behaviour are defined by the [authoritative release reference](release-reference.md). Models propose hypotheses; the deterministic evaluator decides execution outcomes. The [judge application](https://minsk.pages.dev) opens directly on the prepared Missing Approval workflow and exposes live actions only when server-side provider controls report availability. It does not require Settings, BYOK, or provider-routing knowledge. The [public repository](https://github.com/luch91/minsk) contains the implementation and release evidence. The published [demo video](https://youtu.be/AAyDCW-5OKI) presents the application journey.
+
+The owner reports having submitted Minsk to the Meta Global AI Developer Hackathon 2026. This repository does not contain a submission receipt, confirmation identifier or equivalent evidence that independently verifies the submission.
 
 ## Reproducible demonstration
 
@@ -33,7 +35,7 @@ Known limits: Baseten candidate reliability was imperfect in the historical run;
 
 The [Meta event page](https://dev.meta.ai/events/global-hackathon) and [Cerebral Valley event page](https://cerebralvalley.ai/e/meta-ai-developer-hackathon) state that project submissions are due **November 4, 2026 at 9:00 PM ET**. They describe Indie Developer and Startup tracks and the Build for Your World and Push the Frontier themes. The event page describes the Indie track in terms of creativity, technical ambition, and a working result, and the Startup track in terms of technical execution and production durability. These are the published track descriptions, not a claim about an unpublished scoring rubric.
 
-The public pages still refer selected participants to Official Rules, but the full accepted rules and authenticated submission form were not accessible in this review. Therefore the exact required fields, video format or length, repository visibility rules, and final submission receipt are **not verified**. The owner must check the accepted rules and live submission form before filing. This package supplies evidence and a demonstration script; it does not claim a completed hackathon submission and does not include a demo video.
+The public pages still refer selected participants to Official Rules, but the full accepted rules and authenticated submission form were not accessible in this review. Therefore the exact required fields, video format or length, repository visibility rules, and final submission receipt are **not verified**. The owner reports that the submission was completed, and the published demo is linked above. This evidence package does not claim a verified submission receipt.
 
 ## Release handoff evidence recorded on 2026-11-04
 
@@ -42,6 +44,8 @@ The release-candidate and production deployments below were built from the same 
 | Evidence | Reference |
 | --- | --- |
 | Canonical judge URL | [https://minsk.pages.dev](https://minsk.pages.dev) |
+| Published demo video | [https://youtu.be/AAyDCW-5OKI](https://youtu.be/AAyDCW-5OKI) |
+| Submission status | Owner reports having submitted; no verified submission receipt is present in the repository. |
 | Production build identity | [build-info.json](https://minsk.pages.dev/build-info.json) |
 | Immutable production deployment | [5376128f](https://5376128f.minsk.pages.dev) |
 | Release-candidate alias | [https://release-candidate.minsk.pages.dev](https://release-candidate.minsk.pages.dev) |
